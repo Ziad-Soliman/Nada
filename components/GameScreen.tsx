@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Shield, Star, AlertCircle, CheckCircle, Brain, Lightbulb } from 'lucide-react';
 import { PlayerState, MathProblem } from '../types';
-import { generateProblem } from '../services/math';
-import { generateWordProblemText } from '../services/gemini';
+import { getGameBatch } from '../services/math';
 import Button from './Button';
 import Avatar from './Avatar';
 
@@ -16,8 +15,8 @@ const TOTAL_QUESTIONS = 10;
 
 const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, onFinish, setBackgroundPhase }) => {
   const [player, setPlayer] = useState<PlayerState>(initialPlayerState);
+  const [questions, setQuestions] = useState<MathProblem[]>([]);
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [currentProblem, setCurrentProblem] = useState<MathProblem | null>(null);
   const [userAnswer, setUserAnswer] = useState('');
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong' | 'loading'>('loading');
   const [feedback, setFeedback] = useState('');
@@ -25,43 +24,38 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, onFinish, s
   const [showHint, setShowHint] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Initialize or fetch next question
+  // Initial Game Load
   useEffect(() => {
-    const loadNextQuestion = async () => {
-      // Update background based on progress
-      setBackgroundPhase(questionIndex < 5 ? 'earth' : 'nebula');
+    const batch = getGameBatch();
+    setQuestions(batch);
+    setStatus('idle');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-      setStatus('loading');
-      setUserAnswer('');
-      setFeedback('');
-      setIsRetry(false);
-      setShowHint(false);
+  // Handle Question Transition
+  useEffect(() => {
+    if (questions.length === 0) return;
 
-      if (questionIndex >= TOTAL_QUESTIONS) {
+    if (questionIndex >= TOTAL_QUESTIONS) {
         onFinish(player);
         return;
-      }
+    }
 
-      const isWordProblem = questionIndex >= 5; 
-      const problem = generateProblem(isWordProblem);
+    // Update background based on progress
+    setBackgroundPhase(questionIndex < 5 ? 'earth' : 'nebula');
 
-      if (isWordProblem) {
-        try {
-          const text = await generateWordProblemText(problem);
-          problem.questionText = text;
-        } catch (e) {
-          problem.questionText = "Communications offline. Solve the calculation below.";
-        }
-      }
-
-      setCurrentProblem(problem);
-      setStatus('idle');
-      setTimeout(() => inputRef.current?.focus(), 100);
-    };
-
-    loadNextQuestion();
+    // Reset for new question
+    setUserAnswer('');
+    setFeedback('');
+    setIsRetry(false);
+    setShowHint(false);
+    setStatus('idle');
+    
+    setTimeout(() => inputRef.current?.focus(), 100);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [questionIndex]);
+  }, [questionIndex, questions]);
+
+  const currentProblem = questions[questionIndex];
 
   const handleAnswerSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -162,7 +156,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, onFinish, s
             <div className="absolute inset-0 bg-cyan-500 blur-xl opacity-20 rounded-full"></div>
             <Brain className="w-20 h-20 text-cyan-400 relative z-10" />
         </div>
-        <p className="text-xl font-['Orbitron'] text-cyan-200 tracking-widest">DECODING TRANSMISSION...</p>
+        <p className="text-xl font-['Orbitron'] text-cyan-200 tracking-widest">LOADING MISSION DATA...</p>
       </div>
     );
   }
@@ -254,7 +248,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, onFinish, s
                      <div className="relative flex-1">
                         <input
                             ref={inputRef}
-                            type="number" // Changed to text to remove spinners if needed, but number is semantic
+                            type="number" 
                             value={userAnswer}
                             onChange={(e) => setUserAnswer(e.target.value)}
                             className={`w-full bg-slate-950/80 border-2 rounded-2xl px-6 py-4 text-3xl text-center font-['Orbitron'] font-bold outline-none transition-all shadow-inner
