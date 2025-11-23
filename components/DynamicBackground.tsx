@@ -40,11 +40,24 @@ const DynamicBackground: React.FC<DynamicBackgroundProps> = ({ phase }) => {
 
       {/* Earth Phase - Questions 1-5 */}
       <div 
-        className={`absolute inset-x-0 bottom-[-70vh] h-[120vh] bg-gradient-to-t from-blue-600 via-cyan-500 to-transparent opacity-0 transition-opacity duration-2000 ease-in-out ${phase === 'earth' ? 'opacity-100' : 'opacity-0'}`} 
-        style={{ borderRadius: '100%' }}
+        className={`absolute inset-0 transition-opacity duration-2000 ease-in-out ${phase === 'earth' ? 'opacity-100' : 'opacity-0'}`} 
       >
-         {/* Atmosphere Glow */}
-         <div className="absolute inset-0 bg-blue-400 blur-[100px] opacity-30"></div>
+         {/* Realistic Earth Image (High Quality) */}
+         <div 
+            className="absolute bottom-[-85vh] left-1/2 -translate-x-1/2 w-[200vw] h-[200vw] md:w-[150vw] md:h-[150vw] rounded-full bg-no-repeat bg-cover shadow-[0_0_100px_rgba(56,189,248,0.3)]"
+            style={{ 
+                backgroundImage: "url('https://images.unsplash.com/photo-1614730373829-aa548a6e4128?q=80&w=2187&auto=format&fit=crop')",
+                backgroundPosition: 'center 10%',
+                filter: 'brightness(1.1) contrast(1.1) blur(8px)',
+                opacity: 0.9
+            }}
+         >
+            {/* Inner Shadow/Glow for blending */}
+            <div className="absolute inset-0 rounded-full shadow-[inset_0_100px_150px_rgba(0,0,0,0.8)]"></div>
+         </div>
+
+         {/* Atmosphere Glow Overlay */}
+         <div className="absolute bottom-0 left-0 right-0 h-[50vh] bg-gradient-to-t from-cyan-500/20 to-transparent blur-[100px]"></div>
       </div>
 
       {/* Nebula Phase - Questions 6-10 */}
