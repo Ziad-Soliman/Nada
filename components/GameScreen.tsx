@@ -1,19 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Shield, Star, AlertCircle, CheckCircle, Brain, Lightbulb } from 'lucide-react';
-import { PlayerState, MathProblem } from '../types';
+import { Shield, Star, AlertCircle, CheckCircle, Brain, Lightbulb, Rocket, Trees, Gem } from 'lucide-react';
+import { PlayerState, MathProblem, GameId } from '../types';
 import { getGameBatch } from '../services/math';
 import Button from './Button';
 import Avatar from './Avatar';
 
 interface GameScreenProps {
   initialPlayerState: PlayerState;
+  gameId: GameId;
   onFinish: (finalState: PlayerState) => void;
-  setBackgroundPhase: (phase: 'earth' | 'nebula') => void;
+  setBackgroundPhase: (phase: 'start' | 'end') => void;
 }
 
 const TOTAL_QUESTIONS = 10;
 
-const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, onFinish, setBackgroundPhase }) => {
+const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, gameId, onFinish, setBackgroundPhase }) => {
   const [player, setPlayer] = useState<PlayerState>(initialPlayerState);
   const [questions, setQuestions] = useState<MathProblem[]>([]);
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -24,13 +25,20 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, onFinish, s
   const [showHint, setShowHint] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Theme Config based on GameId
+  const theme = {
+    space: { accent: 'text-cyan-400', border: 'focus:border-cyan-500', button: 'primary', icon: Rocket, bgIcon: 'bg-cyan-500' },
+    dino: { accent: 'text-green-400', border: 'focus:border-green-500', button: 'success', icon: Trees, bgIcon: 'bg-green-600' },
+    cave: { accent: 'text-purple-400', border: 'focus:border-purple-500', button: 'warning', icon: Gem, bgIcon: 'bg-purple-500' },
+  }[gameId];
+
   // Initial Game Load
   useEffect(() => {
-    const batch = getGameBatch();
+    const batch = getGameBatch(gameId);
     setQuestions(batch);
     setStatus('idle');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [gameId]);
 
   // Handle Question Transition
   useEffect(() => {
@@ -42,7 +50,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, onFinish, s
     }
 
     // Update background based on progress
-    setBackgroundPhase(questionIndex < 5 ? 'earth' : 'nebula');
+    setBackgroundPhase(questionIndex < 5 ? 'start' : 'end');
 
     // Reset for new question
     setUserAnswer('');
@@ -141,25 +149,40 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, onFinish, s
     if (!currentProblem) return "";
     const { num1, num2, operation } = currentProblem;
     
-    // Simple strategy hint
-    const ones1 = num1 % 10;
-    const ones2 = num2 % 10;
-    const opSign = operation === 'add' ? '+' : '-';
-    
-    return `Strategy: Combine the Ones first (${ones1} ${opSign} ${ones2}), then the Tens.`;
+    if (operation === 'add') return `Add the ones, then the tens.`;
+    if (operation === 'sub') return `Subtract the ones, then the tens.`;
+    if (operation === 'mul') return `This is ${num1} groups of ${num2}.`;
+    if (operation === 'div') return `How many ${num2}s fit into ${num1}?`;
+    if (operation === 'round') return `Look at the ones digit. 5 or more? Round up.`;
+    if (operation === 'val') return `Think about Place Value columns (H, T, O).`;
+
+    return "Check your calculation carefully.";
   };
 
   if (!currentProblem || status === 'loading') {
     return (
       <div className="flex flex-col items-center justify-center space-y-6 animate-pulse">
         <div className="relative">
-            <div className="absolute inset-0 bg-cyan-500 blur-xl opacity-20 rounded-full"></div>
-            <Brain className="w-20 h-20 text-cyan-400 relative z-10" />
+            <div className={`absolute inset-0 ${theme.bgIcon} blur-xl opacity-20 rounded-full`}></div>
+            <Brain className={`w-20 h-20 ${theme.accent} relative z-10`} />
         </div>
-        <p className="text-xl font-['Orbitron'] text-cyan-200 tracking-widest">LOADING MISSION DATA...</p>
+        <p className="text-xl font-['Orbitron'] text-slate-200 tracking-widest">LOADING MISSION DATA...</p>
       </div>
     );
   }
+
+  // Operation symbol logic
+  let symbol = '';
+  switch (currentProblem.operation) {
+      case 'add': case 'val': symbol = '+'; break; // 'val' can be abstract, but + often fits visualization
+      case 'sub': symbol = '-'; break;
+      case 'mul': symbol = '×'; break;
+      case 'div': symbol = '÷'; break;
+      case 'round': symbol = '≈'; break;
+  }
+
+  // For mixed types in Crystal Cave (rounding), we might not show standard equation format
+  const showStandardEquation = !currentProblem.isWordProblem && currentProblem.operation !== 'round' && currentProblem.operation !== 'val';
 
   return (
     <div className="w-full max-w-3xl px-4">
@@ -176,7 +199,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, onFinish, s
                  </div>
             </div>
             <div>
-                <div className="text-xs text-cyan-400 font-mono uppercase tracking-widest mb-1">Commander</div>
+                <div className={`text-xs ${theme.accent} font-mono uppercase tracking-widest mb-1`}>Agent</div>
                 <div className="text-lg font-bold font-['Orbitron'] text-white">{player.name}</div>
             </div>
          </div>
@@ -184,8 +207,8 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, onFinish, s
          {/* Score & Shield */}
          <div className="flex gap-3">
              {player.hasShield && (
-                <div className="flex items-center justify-center w-12 h-12 bg-cyan-500/20 border border-cyan-400/50 rounded-xl shadow-[0_0_10px_rgba(6,182,212,0.4)] animate-pulse">
-                    <Shield className="w-6 h-6 text-cyan-300" />
+                <div className={`flex items-center justify-center w-12 h-12 bg-opacity-20 ${theme.bgIcon} border border-white/20 rounded-xl animate-pulse`}>
+                    <Shield className="w-6 h-6 text-white" />
                 </div>
              )}
              <div className="flex items-center gap-3 px-5 py-2 bg-slate-900/80 border border-yellow-500/30 rounded-xl shadow-lg">
@@ -201,7 +224,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, onFinish, s
         {/* Progress Bar Top */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-slate-800">
             <div 
-                className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500"
+                className={`h-full bg-gradient-to-r ${gameId === 'dino' ? 'from-green-500 to-yellow-400' : gameId === 'cave' ? 'from-purple-500 to-pink-500' : 'from-cyan-500 to-blue-500'} transition-all duration-500`}
                 style={{ width: `${((questionIndex) / TOTAL_QUESTIONS) * 100}%` }}
             ></div>
         </div>
@@ -209,8 +232,8 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, onFinish, s
         <div className="p-8 md:p-12 flex flex-col items-center">
             
             {/* Question Number Badge */}
-            <div className="mb-6 px-4 py-1 rounded-full bg-slate-800/50 border border-white/10 text-xs font-mono text-slate-400 uppercase tracking-[0.2em]">
-                Mission Protocol {questionIndex + 1} / {TOTAL_QUESTIONS}
+            <div className="mb-6 px-4 py-1 rounded-full bg-slate-800/50 border border-white/10 text-xs font-mono text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                <theme.icon className="w-3 h-3" /> Mission Protocol {questionIndex + 1} / {TOTAL_QUESTIONS}
             </div>
 
             {/* Streak Badge */}
@@ -221,25 +244,25 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, onFinish, s
                 </div>
             )}
 
-            {/* Word Problem Text */}
-            {currentProblem.isWordProblem && (
-                <div className="mb-8 text-center max-w-xl animate-fade-in">
-                    <p className="text-xl md:text-2xl text-cyan-100 font-medium leading-relaxed drop-shadow-md">
+            {/* Question Display Area */}
+            <div className="mb-8 text-center animate-fade-in w-full">
+                
+                {currentProblem.questionText && (
+                    <p className="text-xl md:text-2xl text-slate-100 font-medium leading-relaxed drop-shadow-md mb-6 max-w-xl mx-auto">
                         "{currentProblem.questionText}"
                     </p>
-                </div>
-            )}
+                )}
 
-            {/* Math Display */}
-            <div className={`relative mb-8 transition-all duration-300 ${currentProblem.isWordProblem ? 'scale-90' : 'scale-100'}`}>
-                 <div className="flex items-center gap-6 font-['Orbitron'] text-5xl md:text-7xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-                    <span>{currentProblem.num1}</span>
-                    <span className="text-cyan-400">{currentProblem.operation === 'add' ? '+' : '-'}</span>
-                    <span>{currentProblem.num2}</span>
-                 </div>
-                 {/* Decorative brackets */}
-                 <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-4 h-16 border-l-4 border-t-4 border-b-4 border-slate-600/50 rounded-l-xl"></div>
-                 <div className="absolute -right-6 top-1/2 -translate-y-1/2 w-4 h-16 border-r-4 border-t-4 border-b-4 border-slate-600/50 rounded-r-xl"></div>
+                {/* Show standard equation if it's a simple problem */}
+                {showStandardEquation && (
+                    <div className="flex justify-center items-center gap-6 font-['Orbitron'] text-5xl md:text-7xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                        <span>{currentProblem.num1}</span>
+                        <span className={theme.accent}>{symbol}</span>
+                        <span>{currentProblem.num2}</span>
+                    </div>
+                )}
+                
+                {/* For complex word problems or rounding, maybe emphasize the key number if needed, but text usually suffices */}
             </div>
 
             {/* Input Section */}
@@ -254,7 +277,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, onFinish, s
                             className={`w-full bg-slate-950/80 border-2 rounded-2xl px-6 py-4 text-3xl text-center font-['Orbitron'] font-bold outline-none transition-all shadow-inner
                                 ${status === 'wrong' ? 'border-red-500 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 
                                 status === 'correct' ? 'border-green-500 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.2)]' : 
-                                'border-slate-700 focus:border-cyan-500 text-white focus:shadow-[0_0_20px_rgba(6,182,212,0.2)]'}`}
+                                `border-slate-700 ${theme.border} text-white`}`}
                             placeholder="?"
                             autoComplete="off"
                             disabled={status === 'correct'}
@@ -283,7 +306,8 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, onFinish, s
 
                 <Button 
                     type="submit" 
-                    variant={status === 'correct' ? 'success' : status === 'wrong' ? 'danger' : 'primary'}
+                    // @ts-ignore
+                    variant={status === 'correct' ? 'success' : status === 'wrong' ? 'danger' : theme.button}
                     disabled={!userAnswer || status === 'correct'}
                     className="w-full shadow-xl"
                 >

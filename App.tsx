@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { GameState, PlayerState, CharacterConfig } from './types';
+import { GameState, PlayerState, CharacterConfig, GameId } from './types';
 import IntroScreen from './components/IntroScreen';
 import GameScreen from './components/GameScreen';
 import SummaryScreen from './components/SummaryScreen';
 import DashboardScreen from './components/DashboardScreen';
 import DynamicBackground from './components/DynamicBackground';
+import MissionSelect from './components/MissionSelect';
 import { Trophy, Menu, X, Home, Gamepad2, Lock } from 'lucide-react';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>('INTRO');
-  const [backgroundPhase, setBackgroundPhase] = useState<'earth' | 'nebula'>('earth');
+  const [gameId, setGameId] = useState<GameId>('space');
+  const [backgroundPhase, setBackgroundPhase] = useState<'start' | 'end'>('start');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
@@ -29,13 +31,19 @@ const App: React.FC = () => {
     history: []
   });
 
-  const handleStartGame = (name: string, config: CharacterConfig) => {
+  const handleStartIntro = (name: string, config: CharacterConfig) => {
     setPlayerState(prev => ({ 
         ...prev, 
         name, 
         character: config 
     }));
+    setGameState('MISSION_SELECT');
+  };
+
+  const handleMissionSelect = (id: GameId) => {
+    setGameId(id);
     setGameState('PLAYING');
+    setBackgroundPhase('start');
   };
 
   const handleGameFinish = (finalState: PlayerState) => {
@@ -53,8 +61,8 @@ const App: React.FC = () => {
       hintsUsed: 0,
       history: []
     });
-    setGameState('PLAYING');
-    setBackgroundPhase('earth');
+    setGameState('MISSION_SELECT'); // Go back to mission select instead of direct replay
+    setBackgroundPhase('start');
   };
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -75,12 +83,14 @@ const App: React.FC = () => {
   const handleNavigateHome = () => {
     setGameState('INTRO');
     setIsMenuOpen(false);
-    setBackgroundPhase('earth');
+    setBackgroundPhase('start');
+    setGameId('space');
   };
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-white font-sans flex flex-col relative overflow-hidden selection:bg-cyan-500/30 selection:text-cyan-200">
-      <DynamicBackground phase={backgroundPhase} />
+      {/* Background updates based on Game ID */}
+      <DynamicBackground phase={backgroundPhase} gameId={gameState === 'PLAYING' ? gameId : 'space'} />
       
       {/* Header */}
       <header className="p-4 z-20 flex justify-between items-center bg-slate-900/60 backdrop-blur-xl border-b border-white/10 shadow-lg relative">
@@ -144,25 +154,28 @@ const App: React.FC = () => {
 
             <div className="space-y-2 pt-4 border-t border-white/10">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 pl-2">Year 3 Games</p>
-              <button onClick={() => { toggleMenu(); handleNavigateHome(); }} className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-cyan-900/40 to-blue-900/40 border border-cyan-500/50 text-cyan-100 rounded-xl transition-all text-left shadow-[0_0_15px_rgba(6,182,212,0.1)]">
+              
+              <button onClick={() => { setGameId('space'); setGameState('PLAYING'); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 bg-cyan-900/20 hover:bg-cyan-900/40 border border-cyan-500/20 hover:border-cyan-500/50 text-cyan-100 rounded-xl transition-all text-left">
                 <Gamepad2 className="w-5 h-5 text-cyan-400" />
                 <div>
-                  <span className="font-bold block">Math Adventure</span>
-                  <span className="text-[10px] text-cyan-400 uppercase tracking-wider">Active Mission</span>
+                  <span className="font-bold block">Space Saver</span>
+                  <span className="text-[10px] text-cyan-400 uppercase tracking-wider">Add & Sub</span>
                 </div>
               </button>
-              <button className="w-full flex items-center gap-3 px-4 py-3 bg-white/5 text-slate-500 rounded-xl text-left cursor-not-allowed border border-transparent opacity-60">
-                <Gamepad2 className="w-5 h-5 opacity-50" />
+
+              <button onClick={() => { setGameId('dino'); setGameState('PLAYING'); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 bg-green-900/20 hover:bg-green-900/40 border border-green-500/20 hover:border-green-500/50 text-green-100 rounded-xl transition-all text-left">
+                <Gamepad2 className="w-5 h-5 text-green-400" />
                 <div>
-                  <span className="font-bold block">Word Wizard</span>
-                  <span className="text-[10px] uppercase">Locked</span>
+                  <span className="font-bold block">Dino Discovery</span>
+                  <span className="text-[10px] text-green-400 uppercase tracking-wider">Mul & Div</span>
                 </div>
               </button>
-              <button className="w-full flex items-center gap-3 px-4 py-3 bg-white/5 text-slate-500 rounded-xl text-left cursor-not-allowed border border-transparent opacity-60">
-                <Gamepad2 className="w-5 h-5 opacity-50" />
+
+              <button onClick={() => { setGameId('cave'); setGameState('PLAYING'); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 bg-purple-900/20 hover:bg-purple-900/40 border border-purple-500/20 hover:border-purple-500/50 text-purple-100 rounded-xl transition-all text-left">
+                <Gamepad2 className="w-5 h-5 text-purple-400" />
                 <div>
-                  <span className="font-bold block">Science Explorer</span>
-                  <span className="text-[10px] uppercase">Locked</span>
+                  <span className="font-bold block">Crystal Cave</span>
+                  <span className="text-[10px] text-purple-400 uppercase tracking-wider">Place Value</span>
                 </div>
               </button>
             </div>
@@ -224,11 +237,15 @@ const App: React.FC = () => {
       {/* Main Content */}
       <main className="flex-grow flex items-center justify-center p-4 z-10 w-full">
         {gameState === 'INTRO' && (
-          <IntroScreen onStart={handleStartGame} />
+          <IntroScreen onStart={handleStartIntro} />
+        )}
+        {gameState === 'MISSION_SELECT' && (
+          <MissionSelect onSelect={handleMissionSelect} playerName={playerState.name} />
         )}
         {gameState === 'PLAYING' && (
           <GameScreen 
             initialPlayerState={playerState} 
+            gameId={gameId}
             onFinish={handleGameFinish} 
             setBackgroundPhase={setBackgroundPhase}
           />
