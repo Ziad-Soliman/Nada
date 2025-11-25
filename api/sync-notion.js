@@ -7,18 +7,29 @@ export default async function handler(req, res) {
 
   const { student, game, stats } = req.body;
 
-  // Initialize Notion Client
-  const notion = new Client({ auth: process.env.NOTION_API_KEY });
+  // Debug: Log that the function started (visible in Vercel Function Logs)
+  console.log("Function started. Checking environment variables...");
+
+  const NOTION_API_KEY = process.env.NOTION_API_KEY;
   const STUDENT_DB_ID = process.env.NOTION_STUDENT_DB_ID;
   const LOGS_DB_ID = process.env.NOTION_LOGS_DB_ID;
 
-  if (!process.env.NOTION_API_KEY || !STUDENT_DB_ID || !LOGS_DB_ID) {
-    console.error("Server Error: Missing Environment Variables");
+  // Detailed validation to tell you EXACTLY what is missing
+  const missingVars = [];
+  if (!NOTION_API_KEY) missingVars.push('NOTION_API_KEY');
+  if (!STUDENT_DB_ID) missingVars.push('NOTION_STUDENT_DB_ID');
+  if (!LOGS_DB_ID) missingVars.push('NOTION_LOGS_DB_ID');
+
+  if (missingVars.length > 0) {
+    console.error("Missing Environment Variables:", missingVars);
     return res.status(500).json({ 
         error: 'Server Configuration Error', 
-        details: 'Missing NOTION_API_KEY, NOTION_STUDENT_DB_ID, or NOTION_LOGS_DB_ID in Vercel settings.' 
+        details: `Missing the following Vercel Environment Variables: ${missingVars.join(', ')}. IMPORTANT: You must REDEPLOY your project after adding variables.` 
     });
   }
+
+  // Initialize Notion Client
+  const notion = new Client({ auth: NOTION_API_KEY });
 
   const studentUniqueId = `${student.firstName} ${student.lastName} ${student.classId}`.toUpperCase();
 
@@ -45,13 +56,17 @@ export default async function handler(req, res) {
         const response = await findStudentByColumn('Student ID');
         if (response.results.length > 0) existingStudent = response.results[0];
     } catch (e) {
-        console.log("Could not find column 'Student ID', trying 'Name'...");
+        console.log("Column 'Student ID' not found, trying 'Name'...");
         try {
             const response = await findStudentByColumn('Name');
             if (response.results.length > 0) existingStudent = response.results[0];
         } catch (e2) {
-             console.error("Search failed on both 'Student ID' and 'Name'.", e2);
-             throw new Error(`Could not query Student Database. Ensure the Title column is named 'Student ID' or 'Name'. Notion Error: ${e2.message}`);
+             console.error("Search failed on both columns.", e2);
+             // Return a helpful error to the client
+             return res.status(400).json({ 
+                 error: 'Database Schema Error', 
+                 details: `Could not query Student Database. Please ensure the Title property is named 'Student ID' or 'Name'. Notion message: ${e2.message}` 
+             });
         }
     }
 
@@ -78,7 +93,6 @@ export default async function handler(req, res) {
 
     } else {
         // --- CREATE NEW STUDENT ---
-        // We try to create with 'Student ID' as the title key. If it fails, we try 'Name'.
         const studentProps = {
             'First Name': { rich_text: [{ text: { content: student.firstName } }] },
             'Last Name': { rich_text: [{ text: { content: student.lastName } }] },
@@ -108,8 +122,10 @@ export default async function handler(req, res) {
                 });
                 notionPageId = newPage.id;
              } catch (createError) {
-                 console.error("Create Student Failed:", createError);
-                 throw new Error(`Failed to create student. Check if columns 'First Name', 'Last Name', 'Class', 'Total XP' exist in the database. Notion Error: ${createError.message}`);
+                 return res.status(400).json({ 
+                    error: 'Create Student Failed', 
+                    details: `Ensure columns 'First Name', 'Last Name', 'Class', 'Total XP' exist. Notion message: ${createError.message}` 
+                 });
              }
         }
     }
@@ -145,8 +161,10 @@ export default async function handler(req, res) {
                 }
             });
         } catch (logError) {
-            console.error("Create Log Failed:", logError);
-            throw new Error(`Failed to create Mission Log. Check if columns 'Student', 'Game Mode', 'Score', 'Outcome' exist. Notion Error: ${logError.message}`);
+             return res.status(400).json({ 
+                error: 'Create Log Failed', 
+                details: `Ensure columns 'Student', 'Game Mode', 'Score', 'Outcome' exist. Notion message: ${logError.message}` 
+             });
         }
     }
 
