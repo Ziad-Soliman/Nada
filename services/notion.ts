@@ -7,17 +7,15 @@ const isLocalhost = () => {
 
 const sendToApi = async (payload: any) => {
     if (isLocalhost()) {
-        console.warn("NOTION SYNC WARNING: You are running on localhost. The /api/sync-notion route will likely fail (404/500) unless you are running 'vercel dev'.");
+        console.warn("⚠️ localhost detected. Vercel API routes usually require 'vercel dev'.");
     }
 
     try {
-        console.log("📡 Syncing to Notion...", payload);
+        console.log("📡 Sending Payload to Notion:", JSON.stringify(payload, null, 2));
 
         const response = await fetch('/api/sync-notion', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         });
 
@@ -25,23 +23,22 @@ const sendToApi = async (payload: any) => {
         if (contentType && contentType.indexOf("application/json") !== -1) {
             const result = await response.json();
             if (!response.ok) {
-                console.error('❌ Notion Sync Error:', result);
+                console.error('❌ Sync Failed:', result);
                 if (result.details) console.error(`   Details: ${result.details}`);
             } else {
-                console.log('✅ Notion Sync Success:', result);
+                console.log('✅ Sync Success:', result);
+                if (result.warning) console.warn('   ⚠️ Warning:', result.warning);
             }
         } else {
-            const text = await response.text();
-            console.error(`❌ Notion Sync Critical Error (${response.status}):`, text.substring(0, 200));
+            console.error(`❌ Server Error ${response.status}:`, await response.text());
         }
 
     } catch (e) {
-        console.error("❌ Network Error calling Notion API:", e);
+        console.error("❌ Network Error:", e);
     }
 };
 
 export const syncScoreToNotion = async (player: PlayerState, gameId: GameId, score: number, maxScore: number, rank: string, hintsUsed: number) => {
-    // We send the full title. If Notion allows creating options, new game IDs will work automatically.
     const gameTitles: Record<GameId, string> = {
         space: 'Space Station Saver',
         dino: 'Dino Discovery',
@@ -50,7 +47,6 @@ export const syncScoreToNotion = async (player: PlayerState, gameId: GameId, sco
         city: 'Sky City Builder'
     };
     
-    // Fallback for future games not in list
     const title = gameTitles[gameId] || gameId.charAt(0).toUpperCase() + gameId.slice(1);
 
     const payload = {
@@ -60,16 +56,8 @@ export const syncScoreToNotion = async (player: PlayerState, gameId: GameId, sco
             classId: player.classId,
             id: player.id
         },
-        game: {
-            id: gameId,
-            title: title
-        },
-        stats: {
-            score,
-            maxScore,
-            rank, // Sent as "Outcome" to Notion
-            hintsUsed
-        }
+        game: { id: gameId, title: title },
+        stats: { score, maxScore, rank, hintsUsed }
     };
 
     await sendToApi(payload);
@@ -83,8 +71,6 @@ export const syncProfileToNotion = async (player: PlayerState) => {
             classId: player.classId,
             id: player.id
         }
-        // No game or stats data
     };
-    
     await sendToApi(payload);
 };
