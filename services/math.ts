@@ -5,9 +5,9 @@ import { MathProblem, GameId } from '../types';
 
 const NAMES = ["Captain Nova", "Ranger Leo", "Dr. Sarah", "Pilot Orion", "Engineer Sam", "Luna", "Astro", "Starla", "Major Tom", "Sky", "Zara", "Ben", "Omar", "Maya", "Kaito"];
 
-// --- WORD PROBLEM TEMPLATES (Expanded) ---
+// --- WORD PROBLEM TEMPLATES ---
 
-// Space (Add/Sub) - Year 3: Numbers to 1000, 3-digit mental add/sub
+// Space (Add/Sub) - Year 3: 2-Digit No Regrouping
 const ADDITION_TEMPLATES = [
   "{name} fixed {n1} solar panels and {n2} antennas. How many items did they fix in total?",
   "{name} counted {n1} red stars and {n2} blue stars. How many stars did they see altogether?",
@@ -106,73 +106,101 @@ function shuffleArray<T>(array: T[]): T[] {
 
 // --- GENERATORS ---
 
-function generateSpaceBatch(): MathProblem[] {
-  const batch: MathProblem[] = [];
-  
-  // Year 3 Goal: Add/Sub numbers with up to 3 digits.
-  // 15 Questions per batch to ensure coverage
-  const count = 15; 
-
-  for (let i = 0; i < count; i++) {
-    const type = getRandomInt(1, 4); // 1: Simple 3-digit, 2: Word Problem, 3: Missing Number, 4: Crossing 10/100
-    const isAdd = Math.random() > 0.5;
-    const name = getRandomItem(NAMES);
-
-    if (type === 1) {
-        // Direct Calculation (Mental strategies)
-        if (isAdd) {
-            // e.g., 345 + 30 or 120 + 400
-            const n1 = getRandomInt(100, 800);
-            const n2 = Math.random() > 0.5 ? getRandomInt(1, 9) * 10 : getRandomInt(1, 9); 
-            batch.push({ num1: n1, num2: n2, operation: 'add', answer: n1 + n2, isWordProblem: false });
-        } else {
-            const n1 = getRandomInt(100, 900);
-            const n2 = Math.random() > 0.5 ? getRandomInt(1, 9) * 10 : getRandomInt(1, 9);
-            batch.push({ num1: n1, num2: n2, operation: 'sub', answer: n1 - n2, isWordProblem: false });
-        }
-    } else if (type === 2) {
-        // Word Problems
-        if (isAdd) {
-            const n1 = getRandomInt(20, 400);
-            const n2 = getRandomInt(10, 300);
-            const text = getRandomItem(ADDITION_TEMPLATES).replace('{name}', name).replace('{n1}', n1.toString()).replace('{n2}', n2.toString());
-            batch.push({ num1: n1, num2: n2, operation: 'add', answer: n1 + n2, isWordProblem: true, questionText: text });
-        } else {
-            const n1 = getRandomInt(50, 500);
-            const n2 = getRandomInt(10, n1 - 10);
-            const text = getRandomItem(SUBTRACTION_TEMPLATES).replace('{name}', name).replace('{n1}', n1.toString()).replace('{n2}', n2.toString());
-            batch.push({ num1: n1, num2: n2, operation: 'sub', answer: n1 - n2, isWordProblem: true, questionText: text });
-        }
-    } else if (type === 3) {
-        // Missing Number: 100 - ? = 40 or 45 + ? = 100
-        if (isAdd) {
-            const target = 100;
-            const known = getRandomInt(10, 90);
-            batch.push({ 
-                num1: known, num2: 0, operation: 'add', answer: target - known, isWordProblem: true, 
-                questionText: `System Check: ${known} + ? = ${target}. What is the missing number?` 
-            });
-        } else {
-            const n1 = getRandomInt(50, 100);
-            const diff = getRandomInt(10, 40);
-            batch.push({ 
-                num1: n1, num2: 0, operation: 'sub', answer: n1 - diff, isWordProblem: true, 
-                questionText: `Fuel Leak: ${n1} - ? = ${diff}. How much was lost?` 
-            });
-        }
+// Helper: Generates 2 numbers for strict No-Regrouping Add/Sub
+// Returns [num1, num2]
+function getNoRegroupPair(isAdd: boolean): [number, number] {
+    if (isAdd) {
+        // Addition: n1 + n2
+        // Tens: t1 + t2 <= 9
+        const t1 = getRandomInt(1, 8); // 10-80
+        const t2 = getRandomInt(1, 9 - t1); 
+        
+        // Ones: o1 + o2 <= 9
+        const o1 = getRandomInt(0, 9);
+        const o2 = getRandomInt(0, 9 - o1);
+        
+        const n1 = t1 * 10 + o1;
+        const n2 = t2 * 10 + o2;
+        return [n1, n2];
     } else {
-        // Crossing 100 boundary
-        const n1 = getRandomInt(85, 150);
-        const n2 = getRandomInt(5, 15);
-        if (isAdd) {
-             batch.push({ num1: n1, num2: n2, operation: 'add', answer: n1 + n2, isWordProblem: false });
-        } else {
-             batch.push({ num1: n1, num2: n2, operation: 'sub', answer: n1 - n2, isWordProblem: false });
-        }
+        // Subtraction: n1 - n2
+        // Tens: t1 >= t2 (implicit if n1 > n2 generally, but for simple column subtraction logic)
+        const t1 = getRandomInt(2, 9); // 20-99
+        const t2 = getRandomInt(1, t1 - 1); // Ensure n2 is smaller and usually 2-digits (10+)
+        
+        // Ones: o1 >= o2 (No borrowing)
+        const o1 = getRandomInt(0, 9);
+        const o2 = getRandomInt(0, o1);
+        
+        const n1 = t1 * 10 + o1;
+        const n2 = t2 * 10 + o2;
+        return [n1, n2];
     }
+}
+
+function generateSpaceBatch(): MathProblem[] {
+  const directBatch: MathProblem[] = [];
+  const wordBatch: MathProblem[] = [];
+  
+  // Part 1: 5 Direct Questions (Questions 1-5)
+  // Strictly 2-digit, No Regrouping
+  for (let i = 0; i < 5; i++) {
+    const isAdd = Math.random() > 0.5;
+    const [n1, n2] = getNoRegroupPair(isAdd);
+    
+    directBatch.push({
+      num1: n1,
+      num2: n2,
+      operation: isAdd ? 'add' : 'sub',
+      answer: isAdd ? n1 + n2 : n1 - n2,
+      isWordProblem: false
+    });
+  }
+
+  // Part 2: 5 Word Problems (Questions 6-10)
+  for (let i = 0; i < 5; i++) {
+    const isAdd = Math.random() > 0.5;
+    const [n1, n2] = getNoRegroupPair(isAdd);
+    const name = getRandomItem(NAMES);
+    let text = "";
+
+    if (isAdd) {
+        text = getRandomItem(ADDITION_TEMPLATES)
+            .replace('{name}', name)
+            .replace('{n1}', n1.toString())
+            .replace('{n2}', n2.toString());
+    } else {
+        text = getRandomItem(SUBTRACTION_TEMPLATES)
+            .replace('{name}', name)
+            .replace('{n1}', n1.toString())
+            .replace('{n2}', n2.toString());
+    }
+
+    wordBatch.push({
+      num1: n1,
+      num2: n2,
+      operation: isAdd ? 'add' : 'sub',
+      answer: isAdd ? n1 + n2 : n1 - n2,
+      isWordProblem: true,
+      questionText: text
+    });
   }
   
-  return shuffleArray(batch);
+  // Extra questions (Just in case game goes longer)
+  const extraBatch: MathProblem[] = [];
+  for(let i=0; i<5; i++) {
+     const isAdd = Math.random() > 0.5;
+     const [n1, n2] = getNoRegroupPair(isAdd);
+     extraBatch.push({
+        num1: n1, num2: n2, 
+        operation: isAdd ? 'add' : 'sub', 
+        answer: isAdd ? n1+n2 : n1-n2, 
+        isWordProblem: Math.random() > 0.5 
+     });
+  }
+
+  // Return strictly ordered: Direct first, then Word.
+  return [...directBatch, ...wordBatch, ...extraBatch];
 }
 
 function generateDinoBatch(): MathProblem[] {
@@ -270,11 +298,6 @@ function generateCaveBatch(): MathProblem[] {
             let answer = 0;
             let qText = "";
             
-            if (targetPos === 1) { answer = h * 100; qText = `In the number ${number}, what is the value of the digit ${h}?`; }
-            else if (targetPos === 2) { answer = t * 10; qText = `In the number ${number}, what is the value of the digit ${t}?`; }
-            else { answer = o; qText = `In the number ${number}, what is the value of the digit ${o}?`; }
-
-            // To avoid ambiguity if digits repeat (e.g. 333), check uniqueness or phrase carefully.
             // Simplified: "What is the value of the hundreds digit in X?"
             if (targetPos === 1) { qText = `What is the value of the hundreds digit in ${number}?`; answer = h * 100; }
             if (targetPos === 2) { qText = `What is the value of the tens digit in ${number}?`; answer = t * 10; }
