@@ -52,6 +52,24 @@ const App: React.FC = () => {
     lastPlayed: new Date().toISOString()
   });
 
+  // --- SESSION MANAGEMENT ---
+
+  // Starts a fresh game session (Resets score/streak/history)
+  const startNewSession = (id: GameId) => {
+    setPlayerState(prev => ({
+        ...prev,
+        score: 0,
+        streak: 0,
+        hasShield: false,
+        hintsUsed: 0,
+        history: []
+    }));
+    setGameId(id);
+    setGameState('PLAYING');
+    setBackgroundPhase('start');
+    setIsMenuOpen(false);
+  };
+
   const handleStartIntro = (loadedProfile: PlayerState) => {
     // When profile is loaded/created, we reset session specific data but keep stats
     setPlayerState({
@@ -69,12 +87,6 @@ const App: React.FC = () => {
     setGameState('MISSION_SELECT');
   };
 
-  const handleMissionSelect = (id: GameId) => {
-    setGameId(id);
-    setGameState('PLAYING');
-    setBackgroundPhase('start');
-  };
-
   const handleGameFinish = (finalState: PlayerState) => {
     // Calculate new stats
     const currentScore = finalState.score;
@@ -84,7 +96,7 @@ const App: React.FC = () => {
     let rank = "Space Cadet";
 
     // Determine Rank - Matches visual summary logic
-    if (currentScore === 100) { medalEarned = 'gold'; rank = "Galactic Legend"; }
+    if (currentScore >= 100) { medalEarned = 'gold'; rank = "Galactic Legend"; }
     else if (currentScore >= 80) { medalEarned = 'silver'; rank = "Math Astronaut"; }
     else if (currentScore >= 50) { medalEarned = 'bronze'; rank = "Star Pilot"; }
     else { rank = "Space Cadet"; }
@@ -123,18 +135,8 @@ const App: React.FC = () => {
   };
 
   const handleRestart = () => {
-    setPlayerState(prev => ({
-      ...prev,
-      // Reset session data
-      score: 0,
-      streak: 0,
-      hasShield: false,
-      hintsUsed: 0,
-      history: []
-      // Stats are preserved via ...prev
-    }));
-    setGameState('MISSION_SELECT'); 
-    setBackgroundPhase('start');
+    // Instant replay of the current game
+    startNewSession(gameId);
   };
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -153,7 +155,6 @@ const App: React.FC = () => {
   };
 
   const handleNavigateHome = () => {
-    setGameState('INTRO');
     setIsMenuOpen(false);
     setBackgroundPhase('start');
     setGameId('space');
@@ -291,7 +292,7 @@ const App: React.FC = () => {
             <div className="space-y-2 pt-4 border-t border-white/10">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 pl-2">Year 3 Games</p>
               
-              <button onClick={() => { setGameId('space'); setGameState('PLAYING'); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 bg-cyan-900/20 hover:bg-cyan-900/40 border border-cyan-500/20 hover:border-cyan-500/50 text-cyan-100 rounded-xl transition-all text-left">
+              <button onClick={() => startNewSession('space')} className="w-full flex items-center gap-3 px-4 py-3 bg-cyan-900/20 hover:bg-cyan-900/40 border border-cyan-500/20 hover:border-cyan-500/50 text-cyan-100 rounded-xl transition-all text-left">
                 <Gamepad2 className="w-5 h-5 text-cyan-400" />
                 <div>
                   <span className="font-bold block">Space Station Saver</span>
@@ -299,7 +300,7 @@ const App: React.FC = () => {
                 </div>
               </button>
 
-              <button onClick={() => { setGameId('dino'); setGameState('PLAYING'); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 bg-green-900/20 hover:bg-green-900/40 border border-green-500/20 hover:border-green-500/50 text-green-100 rounded-xl transition-all text-left">
+              <button onClick={() => startNewSession('dino')} className="w-full flex items-center gap-3 px-4 py-3 bg-green-900/20 hover:bg-green-900/40 border border-green-500/20 hover:border-green-500/50 text-green-100 rounded-xl transition-all text-left">
                 <Gamepad2 className="w-5 h-5 text-green-400" />
                 <div>
                   <span className="font-bold block">Dino Discovery</span>
@@ -307,7 +308,7 @@ const App: React.FC = () => {
                 </div>
               </button>
 
-              <button onClick={() => { setGameId('cave'); setGameState('PLAYING'); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 bg-purple-900/20 hover:bg-purple-900/40 border border-purple-500/20 hover:border-purple-500/50 text-purple-100 rounded-xl transition-all text-left">
+              <button onClick={() => startNewSession('cave')} className="w-full flex items-center gap-3 px-4 py-3 bg-purple-900/20 hover:bg-purple-900/40 border border-purple-500/20 hover:border-purple-500/50 text-purple-100 rounded-xl transition-all text-left">
                 <Gamepad2 className="w-5 h-5 text-purple-400" />
                 <div>
                   <span className="font-bold block">Crystal Cave</span>
@@ -315,7 +316,7 @@ const App: React.FC = () => {
                 </div>
               </button>
 
-              <button onClick={() => { setGameId('ocean'); setGameState('PLAYING'); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 bg-teal-900/20 hover:bg-teal-900/40 border border-teal-500/20 hover:border-teal-500/50 text-teal-100 rounded-xl transition-all text-left">
+              <button onClick={() => startNewSession('ocean')} className="w-full flex items-center gap-3 px-4 py-3 bg-teal-900/20 hover:bg-teal-900/40 border border-teal-500/20 hover:border-teal-500/50 text-teal-100 rounded-xl transition-all text-left">
                 <Gamepad2 className="w-5 h-5 text-teal-400" />
                 <div>
                   <span className="font-bold block">Ocean Odyssey</span>
@@ -323,7 +324,7 @@ const App: React.FC = () => {
                 </div>
               </button>
 
-              <button onClick={() => { setGameId('city'); setGameState('PLAYING'); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 bg-sky-900/20 hover:bg-sky-900/40 border border-sky-500/20 hover:border-sky-500/50 text-sky-100 rounded-xl transition-all text-left">
+              <button onClick={() => startNewSession('city')} className="w-full flex items-center gap-3 px-4 py-3 bg-sky-900/20 hover:bg-sky-900/40 border border-sky-500/20 hover:border-sky-500/50 text-sky-100 rounded-xl transition-all text-left">
                 <Gamepad2 className="w-5 h-5 text-sky-400" />
                 <div>
                   <span className="font-bold block">Sky City Builder</span>
@@ -331,7 +332,7 @@ const App: React.FC = () => {
                 </div>
               </button>
 
-              <button onClick={() => { setGameId('time'); setGameState('PLAYING'); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 bg-amber-900/20 hover:bg-amber-900/40 border border-amber-500/20 hover:border-amber-500/50 text-amber-100 rounded-xl transition-all text-left">
+              <button onClick={() => startNewSession('time')} className="w-full flex items-center gap-3 px-4 py-3 bg-amber-900/20 hover:bg-amber-900/40 border border-amber-500/20 hover:border-amber-500/50 text-amber-100 rounded-xl transition-all text-left">
                 <Clock className="w-5 h-5 text-amber-400" />
                 <div>
                   <span className="font-bold block">Time Warp</span>
@@ -408,7 +409,7 @@ const App: React.FC = () => {
           <IntroScreen onStart={handleStartIntro} />
         )}
         {gameState === 'MISSION_SELECT' && (
-          <MissionSelect onSelect={handleMissionSelect} playerName={playerState.firstName} />
+          <MissionSelect onSelect={startNewSession} playerName={playerState.firstName} />
         )}
         {gameState === 'PLAYING' && (
           <GameScreen 
