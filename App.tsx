@@ -10,6 +10,7 @@ import DynamicBackground from './components/DynamicBackground';
 import MissionSelect from './components/MissionSelect';
 import Avatar from './components/Avatar';
 import { saveStudentProgress } from './services/storage';
+import { syncScoreToNotion } from './services/notion';
 import { Menu, X, Home, Gamepad2, Lock, User } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -73,10 +74,11 @@ const App: React.FC = () => {
     // Calculate new stats
     const currentScore = finalState.score;
     let medalEarned: 'gold' | 'silver' | 'bronze' | null = null;
-    
-    if (currentScore === 100) medalEarned = 'gold';
-    else if (currentScore >= 80) medalEarned = 'silver';
-    else if (currentScore >= 50) medalEarned = 'bronze';
+    let rank = "Space Cadet";
+
+    if (currentScore === 100) { medalEarned = 'gold'; rank = "Galactic Legend"; }
+    else if (currentScore >= 80) { medalEarned = 'silver'; rank = "Math Astronaut"; }
+    else if (currentScore >= 50) { medalEarned = 'bronze'; rank = "Star Pilot"; }
 
     // Update local state and persist to storage
     setPlayerState(prev => {
@@ -99,8 +101,11 @@ const App: React.FC = () => {
             }
         };
 
-        // Save to persistent storage
+        // Save to persistent storage (Local)
         saveStudentProgress(updatedProfile);
+        
+        // Sync to Notion (Cloud) - Non-blocking
+        syncScoreToNotion(updatedProfile, gameId, currentScore, rank, finalState.hintsUsed);
 
         return updatedProfile;
     });
@@ -241,10 +246,10 @@ const App: React.FC = () => {
       </header>
 
       {/* Side Navigation Drawer */}
-      <div className={`fixed inset-0 z-50 pointer-events-none transition-opacity duration-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`fixed inset-0 z-50 transition-opacity duration-300 ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
         {/* Backdrop */}
         <div 
-          className={`absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300 ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+          className={`absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0'}`}
           onClick={toggleMenu}
         />
         
