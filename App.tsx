@@ -10,7 +10,7 @@ import DynamicBackground from './components/DynamicBackground';
 import MissionSelect from './components/MissionSelect';
 import Avatar from './components/Avatar';
 import { saveStudentProgress } from './services/storage';
-import { syncScoreToNotion } from './services/notion';
+import { syncScoreToNotion, syncProfileToNotion } from './services/notion';
 import { Menu, X, Home, Gamepad2, Lock, User } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -61,6 +61,10 @@ const App: React.FC = () => {
         hintsUsed: 0,
         history: []
     });
+    
+    // Sync profile to Notion immediately (Identity Sync)
+    syncProfileToNotion(loadedProfile);
+    
     setGameState('MISSION_SELECT');
   };
 
@@ -73,12 +77,16 @@ const App: React.FC = () => {
   const handleGameFinish = (finalState: PlayerState) => {
     // Calculate new stats
     const currentScore = finalState.score;
+    const maxScore = 100; // Hardcoded max score for now
+
     let medalEarned: 'gold' | 'silver' | 'bronze' | null = null;
     let rank = "Space Cadet";
 
+    // Determine Rank - Matches visual summary logic
     if (currentScore === 100) { medalEarned = 'gold'; rank = "Galactic Legend"; }
     else if (currentScore >= 80) { medalEarned = 'silver'; rank = "Math Astronaut"; }
     else if (currentScore >= 50) { medalEarned = 'bronze'; rank = "Star Pilot"; }
+    else { rank = "Space Cadet"; }
 
     // Update local state and persist to storage
     setPlayerState(prev => {
@@ -105,8 +113,8 @@ const App: React.FC = () => {
         saveStudentProgress(updatedProfile);
         
         // Sync to Notion (Cloud) - Non-blocking
-        // We pass 'finalState.hintsUsed' directly as it tracks the current session usage
-        syncScoreToNotion(updatedProfile, gameId, currentScore, rank, finalState.hintsUsed);
+        // We pass the exact 'rank' string. If Notion doesn't have it, it will create it (if column is Select type).
+        syncScoreToNotion(updatedProfile, gameId, currentScore, maxScore, rank, finalState.hintsUsed);
 
         return updatedProfile;
     });
