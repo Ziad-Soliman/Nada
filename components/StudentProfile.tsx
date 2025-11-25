@@ -52,8 +52,12 @@ const StudentProfile: React.FC<StudentProfileProps> = ({ player, onBack }) => {
 
          {/* Stats Summary */}
          <div className="flex-1 text-center md:text-left z-10">
-            <h2 className="text-4xl font-bold font-['Orbitron'] text-white mb-2">{player.name}</h2>
-            <p className="text-slate-400 mb-6">Cadet Profile & Service Record</p>
+            <h2 className="text-4xl font-bold font-['Orbitron'] text-white mb-2">{player.firstName} {player.lastName}</h2>
+            <div className="flex items-center justify-center md:justify-start gap-3 mb-6">
+                <span className="text-slate-400">Cadet Profile</span>
+                <span className="w-1 h-1 rounded-full bg-slate-600"></span>
+                <span className="bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded text-xs font-bold">Class {player.classId}</span>
+            </div>
             
             <div className="flex gap-4 justify-center md:justify-start">
                <div className="bg-slate-950/50 p-4 rounded-xl border border-white/5 min-w-[100px] text-center">

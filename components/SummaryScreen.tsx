@@ -1,15 +1,17 @@
+
 import React from 'react';
-import { PlayerState } from '../types';
-import { Trophy, RotateCcw, Share2 } from 'lucide-react';
+import { PlayerState, GameId } from '../types';
+import { Trophy, RotateCcw, Share2, Mail } from 'lucide-react';
 import Button from './Button';
 import Avatar from './Avatar';
 
 interface SummaryScreenProps {
   playerState: PlayerState;
+  gameId: GameId;
   onRestart: () => void;
 }
 
-const SummaryScreen: React.FC<SummaryScreenProps> = ({ playerState, onRestart }) => {
+const SummaryScreen: React.FC<SummaryScreenProps> = ({ playerState, gameId, onRestart }) => {
   const maxScore = 100; 
   const percentage = (playerState.score / maxScore) * 100;
 
@@ -35,6 +37,42 @@ const SummaryScreen: React.FC<SummaryScreenProps> = ({ playerState, onRestart })
     gradientClass = "from-blue-400 to-indigo-500";
   }
 
+  const handleSendToTeacher = () => {
+    // Construct the email data
+    const missionData = {
+      student: `${playerState.firstName} ${playerState.lastName}`,
+      class: playerState.classId,
+      game: gameId,
+      score: playerState.score,
+      maxScore: maxScore,
+      rank: rank,
+      date: new Date().toLocaleString(),
+      history: playerState.history
+    };
+
+    const subject = encodeURIComponent(`Math Mission Report: ${playerState.firstName} ${playerState.lastName} (${playerState.classId})`);
+    
+    const bodyText = `
+Dear Mrs. Nada,
+
+Here is the mission report for Cadet ${playerState.firstName} ${playerState.lastName}.
+
+--- MISSION SUMMARY ---
+Student Name: ${playerState.firstName} ${playerState.lastName}
+Class: ${playerState.classId}
+Game Protocol: ${gameId.toUpperCase()}
+Final Score: ${playerState.score} / ${maxScore}
+Rank Achieved: ${rank}
+Date: ${missionData.date}
+
+--- RAW FLIGHT DATA (JSON) ---
+${JSON.stringify(missionData, null, 2)}
+`;
+
+    const body = encodeURIComponent(bodyText);
+    window.location.href = `mailto:lymounanada@gmail.com?subject=${subject}&body=${body}`;
+  };
+
   return (
     <div className="max-w-lg w-full bg-slate-900/80 backdrop-blur-xl p-10 rounded-[2rem] shadow-[0_0_60px_rgba(0,0,0,0.6)] border border-white/10 text-center animate-fade-in flex flex-col items-center relative overflow-hidden">
       
@@ -58,7 +96,7 @@ const SummaryScreen: React.FC<SummaryScreenProps> = ({ playerState, onRestart })
         </div>
       </div>
 
-      <h2 className="text-4xl font-bold font-['Orbitron'] text-white mb-2 mt-4">{playerState.name}</h2>
+      <h2 className="text-4xl font-bold font-['Orbitron'] text-white mb-2 mt-4">{playerState.firstName}</h2>
       
       <div className="bg-slate-950/50 rounded-2xl p-6 mb-8 border border-white/5 w-full shadow-inner">
         <div className="flex justify-center items-baseline gap-2 mb-2">
@@ -87,13 +125,19 @@ const SummaryScreen: React.FC<SummaryScreenProps> = ({ playerState, onRestart })
         </div>
       </div>
 
-      <div className="flex gap-3 w-full">
-        <Button onClick={onRestart} variant="primary" className="flex-1">
-            <RotateCcw className="w-5 h-5" /> Replay
+      <div className="flex flex-col gap-3 w-full">
+        <Button onClick={handleSendToTeacher} variant="success" className="w-full flex items-center justify-center gap-2 group">
+            <Mail className="w-5 h-5 group-hover:-translate-y-1 transition-transform" /> Send to Mrs. Nada
         </Button>
-        <Button variant="secondary" className="px-4" title="Share Score (Mock)">
-             <Share2 className="w-5 h-5" />
-        </Button>
+        
+        <div className="flex gap-3 w-full">
+            <Button onClick={onRestart} variant="primary" className="flex-1">
+                <RotateCcw className="w-5 h-5" /> Replay
+            </Button>
+            <Button variant="secondary" className="px-4" title="Share Score (Mock)">
+                <Share2 className="w-5 h-5" />
+            </Button>
+        </div>
       </div>
     </div>
   );

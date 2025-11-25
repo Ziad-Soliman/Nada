@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { GameState, PlayerState, CharacterConfig, GameId, GameStats } from './types';
+import { GameState, PlayerState, GameId, GameStats } from './types';
 import IntroScreen from './components/IntroScreen';
 import GameScreen from './components/GameScreen';
 import SummaryScreen from './components/SummaryScreen';
@@ -9,7 +9,8 @@ import StudentProfile from './components/StudentProfile';
 import DynamicBackground from './components/DynamicBackground';
 import MissionSelect from './components/MissionSelect';
 import Avatar from './components/Avatar';
-import { Trophy, Menu, X, Home, Gamepad2, Lock, User } from 'lucide-react';
+import { saveStudentProgress } from './services/storage';
+import { Menu, X, Home, Gamepad2, Lock, User } from 'lucide-react';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>('INTRO');
@@ -23,8 +24,12 @@ const App: React.FC = () => {
   // Initial stats helper
   const initialGameStats: GameStats = { highScore: 0, timesPlayed: 0, totalScore: 0, medals: { gold: 0, silver: 0, bronze: 0 } };
 
+  // Default empty player state for initialization
   const [playerState, setPlayerState] = useState<PlayerState>({
-    name: '',
+    id: '',
+    firstName: '',
+    lastName: '',
+    classId: '3A',
     character: {
         suitColor: 'blue',
         helmetStyle: 'classic',
@@ -41,15 +46,20 @@ const App: React.FC = () => {
         cave: { ...initialGameStats },
         ocean: { ...initialGameStats },
         city: { ...initialGameStats },
-    }
+    },
+    lastPlayed: new Date().toISOString()
   });
 
-  const handleStartIntro = (name: string, config: CharacterConfig) => {
-    setPlayerState(prev => ({ 
-        ...prev, 
-        name, 
-        character: config 
-    }));
+  const handleStartIntro = (loadedProfile: PlayerState) => {
+    // When profile is loaded/created, we reset session specific data but keep stats
+    setPlayerState({
+        ...loadedProfile,
+        score: 0,
+        streak: 0,
+        hasShield: false,
+        hintsUsed: 0,
+        history: []
+    });
     setGameState('MISSION_SELECT');
   };
 
@@ -68,6 +78,7 @@ const App: React.FC = () => {
     else if (currentScore >= 80) medalEarned = 'silver';
     else if (currentScore >= 50) medalEarned = 'bronze';
 
+    // Update local state and persist to storage
     setPlayerState(prev => {
         const oldGameStats = prev.stats[gameId];
         const newGameStats = {
@@ -80,14 +91,20 @@ const App: React.FC = () => {
             }
         };
 
-        return {
-            ...finalState, // Keeps history/score of current session
+        const updatedProfile = {
+            ...finalState, // Keeps history/score of current session for Summary display
             stats: {
                 ...prev.stats,
                 [gameId]: newGameStats
             }
         };
+
+        // Save to persistent storage
+        saveStudentProgress(updatedProfile);
+
+        return updatedProfile;
     });
+
     setGameState('SUMMARY');
   };
 
@@ -126,6 +143,20 @@ const App: React.FC = () => {
     setIsMenuOpen(false);
     setBackgroundPhase('start');
     setGameId('space');
+    // Reset player state somewhat to ensure they log in again if they go 'Home' completely?
+    // Or just let them be logged in. Usually 'Home' implies Mission Select if logged in, or Intro if logging out.
+    // For safety, let's keep them logged in but return to Mission Select if they have a profile.
+    if (playerState.firstName) {
+        setGameState('MISSION_SELECT');
+    } else {
+        setGameState('INTRO');
+    }
+  };
+
+  const handleLogout = () => {
+      setPlayerState({ ...playerState, firstName: '' }); // Clear active user
+      setGameState('INTRO');
+      setIsMenuOpen(false);
   };
 
   const getHeaderTitle = () => {
@@ -177,7 +208,7 @@ const App: React.FC = () => {
         
         {/* Right Side: Dynamic Game Name & User Profile */}
         <div className="flex items-center gap-4">
-           {playerState.name && (
+           {playerState.firstName && (
              <>
                 {/* Game Title */}
                 <div className="text-right hidden md:block">
@@ -194,8 +225,8 @@ const App: React.FC = () => {
                   title="Open Cadet Profile"
                 >
                     <div className="text-right hidden sm:block">
-                        <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider group-hover:text-cyan-400 transition-colors">Cadet</div>
-                        <div className="text-sm font-bold text-white font-['Orbitron'] group-hover:text-cyan-200 transition-colors">{playerState.name}</div>
+                        <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider group-hover:text-cyan-400 transition-colors">Cadet {playerState.classId}</div>
+                        <div className="text-sm font-bold text-white font-['Orbitron'] group-hover:text-cyan-200 transition-colors">{playerState.firstName} {playerState.lastName.charAt(0)}.</div>
                     </div>
                     <div className="relative">
                         <div className="absolute inset-0 bg-cyan-500/20 rounded-full blur-md group-hover:bg-cyan-400/30 transition-all"></div>
@@ -236,7 +267,7 @@ const App: React.FC = () => {
                 <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 <span className="font-bold">Home Base</span>
               </button>
-              {playerState.name && (
+              {playerState.firstName && (
                 <button onClick={() => { setGameState('STUDENT_PROFILE'); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-purple-500/20 text-slate-200 hover:text-purple-300 rounded-xl transition-all text-left border border-transparent hover:border-purple-500/30 group">
                   <User className="w-5 h-5 group-hover:scale-110 transition-transform" />
                   <span className="font-bold">My Profile</span>
@@ -289,7 +320,15 @@ const App: React.FC = () => {
             </div>
           </nav>
 
-          <div className="p-6 border-t border-white/10 bg-slate-950/30">
+          <div className="p-6 border-t border-white/10 bg-slate-950/30 space-y-3">
+            {playerState.firstName && (
+                <button 
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 text-slate-400 hover:text-white rounded-xl transition-colors text-sm font-bold border border-white/5 hover:border-white/10 hover:bg-red-500/10"
+                >
+                    Log Out
+                </button>
+            )}
             <button 
               onClick={() => { setIsLoginOpen(true); }}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-colors text-sm font-bold border border-white/5 hover:border-white/10"
@@ -348,7 +387,7 @@ const App: React.FC = () => {
           <IntroScreen onStart={handleStartIntro} />
         )}
         {gameState === 'MISSION_SELECT' && (
-          <MissionSelect onSelect={handleMissionSelect} playerName={playerState.name} />
+          <MissionSelect onSelect={handleMissionSelect} playerName={playerState.firstName} />
         )}
         {gameState === 'PLAYING' && (
           <GameScreen 
@@ -361,6 +400,7 @@ const App: React.FC = () => {
         {gameState === 'SUMMARY' && (
           <SummaryScreen 
             playerState={playerState} 
+            gameId={gameId}
             onRestart={handleRestart} 
           />
         )}
