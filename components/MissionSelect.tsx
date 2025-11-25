@@ -1,6 +1,6 @@
 import React from 'react';
 import { GameId } from '../types';
-import { Rocket, Trees, Gem, ArrowRight, Lock } from 'lucide-react';
+import { Rocket, Trees, Gem, ArrowRight, Lock, Anchor, Building2 } from 'lucide-react';
 
 interface MissionSelectProps {
   onSelect: (gameId: GameId) => void;
@@ -39,17 +39,37 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
       shadow: 'shadow-purple-500/40',
       description: "Collect rare gems underground! Rounding and place value mastery.",
       difficulty: 'Normal'
+    },
+    {
+      id: 'ocean' as GameId,
+      title: 'Ocean Odyssey',
+      subtitle: 'Fractions',
+      icon: Anchor,
+      color: 'from-teal-500 to-cyan-600',
+      shadow: 'shadow-teal-500/40',
+      description: "Dive deep! Find 1/2 and 1/4 of amounts and identify fractions.",
+      difficulty: 'Normal'
+    },
+    {
+      id: 'city' as GameId,
+      title: 'Sky City Builder',
+      subtitle: 'Geometry',
+      icon: Building2,
+      color: 'from-sky-400 to-indigo-500',
+      shadow: 'shadow-sky-500/40',
+      description: "Construct the future! Identify 3D shapes, edges, vertices, and angles.",
+      difficulty: 'Easy'
     }
   ];
 
   return (
-    <div className="w-full max-w-4xl p-6 animate-fade-in">
-       <div className="text-center mb-10">
+    <div className="w-full max-w-5xl p-6 animate-fade-in h-full overflow-y-auto pb-20">
+       <div className="text-center mb-8">
           <h2 className="text-3xl font-['Orbitron'] font-bold text-white mb-2">Welcome, {playerName}</h2>
           <p className="text-slate-400">Select your mission to begin training.</p>
        </div>
 
-       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {missions.map((m) => (
             <button
               key={m.id}
@@ -84,7 +104,7 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
           ))}
           
           {/* Locked Content Teaser */}
-          <div className="relative bg-slate-950/40 border border-dashed border-slate-700/50 rounded-3xl p-6 flex flex-col items-center justify-center text-center opacity-70">
+          <div className="relative bg-slate-950/40 border border-dashed border-slate-700/50 rounded-3xl p-6 flex flex-col items-center justify-center text-center opacity-70 min-h-[250px]">
               <Lock className="w-8 h-8 text-slate-600 mb-2" />
               <p className="text-slate-500 font-bold">Mystery Mission</p>
               <p className="text-xs text-slate-600">Coming Term 3</p>

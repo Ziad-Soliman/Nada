@@ -49,6 +49,24 @@ const DynamicBackground: React.FC<DynamicBackgroundProps> = ({ phase, gameId }) 
         overlayGradient: 'from-purple-500/20 to-transparent',
         nebulaColors: ['bg-purple-900/50', 'bg-fuchsia-900/40', 'bg-violet-900/30'],
         texture: "url('https://www.transparenttextures.com/patterns/cubes.png')"
+    },
+    ocean: {
+        bg: 'bg-cyan-950',
+        particleColor: 'bg-teal-200/40', // Bubbles
+        particleShape: 'rounded-full', 
+        image: "url('https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?q=80&w=2670&auto=format&fit=crop')", // Underwater
+        overlayGradient: 'from-cyan-600/30 to-transparent',
+        nebulaColors: ['bg-cyan-900/50', 'bg-teal-900/40', 'bg-blue-900/30'],
+        texture: "url('https://www.transparenttextures.com/patterns/diagmonds-light.png')"
+    },
+    city: {
+        bg: 'bg-slate-900',
+        particleColor: 'bg-sky-200/60', // Clouds/Drones
+        particleShape: 'rounded-sm', 
+        image: "url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=2444&auto=format&fit=crop')", // City Skyline
+        overlayGradient: 'from-sky-500/20 to-transparent',
+        nebulaColors: ['bg-sky-900/40', 'bg-blue-900/30', 'bg-indigo-900/30'],
+        texture: "url('https://www.transparenttextures.com/patterns/carbon-fibre.png')"
     }
   };
 

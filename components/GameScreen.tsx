@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import { Shield, Star, AlertCircle, CheckCircle, Brain, Lightbulb, Rocket, Trees, Gem } from 'lucide-react';
+import { Shield, Star, AlertCircle, CheckCircle, Brain, Lightbulb, Rocket, Trees, Gem, Anchor, Building2 } from 'lucide-react';
 import { PlayerState, MathProblem, GameId } from '../types';
 import { getGameBatch } from '../services/math';
 import Button from './Button';
 import Avatar from './Avatar';
+import ShapeDisplay from './ShapeDisplay';
 
 interface GameScreenProps {
   initialPlayerState: PlayerState;
@@ -27,9 +29,11 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, gameId, onF
 
   // Theme Config based on GameId
   const theme = {
-    space: { accent: 'text-cyan-400', border: 'focus:border-cyan-500', button: 'primary', icon: Rocket, bgIcon: 'bg-cyan-500' },
-    dino: { accent: 'text-green-400', border: 'focus:border-green-500', button: 'success', icon: Trees, bgIcon: 'bg-green-600' },
-    cave: { accent: 'text-purple-400', border: 'focus:border-purple-500', button: 'warning', icon: Gem, bgIcon: 'bg-purple-500' },
+    space: { accent: 'text-cyan-400', border: 'focus:border-cyan-500', button: 'primary', icon: Rocket, bgIcon: 'bg-cyan-500', gradient: 'from-cyan-500 to-blue-500', shapeColor: 'text-cyan-400' },
+    dino: { accent: 'text-green-400', border: 'focus:border-green-500', button: 'success', icon: Trees, bgIcon: 'bg-green-600', gradient: 'from-green-500 to-yellow-400', shapeColor: 'text-green-400' },
+    cave: { accent: 'text-purple-400', border: 'focus:border-purple-500', button: 'warning', icon: Gem, bgIcon: 'bg-purple-500', gradient: 'from-purple-500 to-pink-500', shapeColor: 'text-purple-400' },
+    ocean: { accent: 'text-teal-400', border: 'focus:border-teal-500', button: 'primary', icon: Anchor, bgIcon: 'bg-teal-500', gradient: 'from-teal-400 to-cyan-500', shapeColor: 'text-teal-400' },
+    city: { accent: 'text-sky-400', border: 'focus:border-sky-500', button: 'secondary', icon: Building2, bgIcon: 'bg-sky-500', gradient: 'from-sky-400 to-indigo-500', shapeColor: 'text-sky-400' },
   }[gameId];
 
   // Initial Game Load
@@ -155,6 +159,8 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, gameId, onF
     if (operation === 'div') return `How many ${num2}s fit into ${num1}?`;
     if (operation === 'round') return `Look at the ones digit. 5 or more? Round up.`;
     if (operation === 'val') return `Think about Place Value columns (H, T, O).`;
+    if (operation === 'frac') return `1/${num2} means divide by ${num2}.`;
+    if (operation === 'geo') return `Count carefully!`;
 
     return "Check your calculation carefully.";
   };
@@ -179,10 +185,12 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, gameId, onF
       case 'mul': symbol = '×'; break;
       case 'div': symbol = '÷'; break;
       case 'round': symbol = '≈'; break;
+      case 'frac': symbol = 'f'; break;
+      case 'geo': symbol = '?'; break;
   }
 
-  // For mixed types in Crystal Cave (rounding), we might not show standard equation format
-  const showStandardEquation = !currentProblem.isWordProblem && currentProblem.operation !== 'round' && currentProblem.operation !== 'val';
+  // For mixed types or specific modes, we might not show standard equation format
+  const showStandardEquation = !currentProblem.isWordProblem && ['add', 'sub', 'mul', 'div'].includes(currentProblem.operation);
 
   return (
     <div className="w-full max-w-3xl px-4">
@@ -224,7 +232,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, gameId, onF
         {/* Progress Bar Top */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-slate-800">
             <div 
-                className={`h-full bg-gradient-to-r ${gameId === 'dino' ? 'from-green-500 to-yellow-400' : gameId === 'cave' ? 'from-purple-500 to-pink-500' : 'from-cyan-500 to-blue-500'} transition-all duration-500`}
+                className={`h-full bg-gradient-to-r ${theme.gradient} transition-all duration-500`}
                 style={{ width: `${((questionIndex) / TOTAL_QUESTIONS) * 100}%` }}
             ></div>
         </div>
@@ -245,8 +253,16 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, gameId, onF
             )}
 
             {/* Question Display Area */}
-            <div className="mb-8 text-center animate-fade-in w-full">
+            <div className="mb-8 text-center animate-fade-in w-full flex flex-col items-center">
                 
+                {/* Visual Representation (Shapes) */}
+                {currentProblem.visualType && (
+                    <div className="mb-8 p-6 bg-slate-950/50 rounded-2xl border border-white/5 shadow-inner relative overflow-hidden group">
+                        <div className={`absolute inset-0 bg-gradient-to-br ${theme.gradient} opacity-5 group-hover:opacity-10 transition-opacity`}></div>
+                        <ShapeDisplay type={currentProblem.visualType} className={`w-32 h-32 md:w-40 md:h-40 ${theme.shapeColor}`} />
+                    </div>
+                )}
+
                 {currentProblem.questionText && (
                     <p className="text-xl md:text-2xl text-slate-100 font-medium leading-relaxed drop-shadow-md mb-6 max-w-xl mx-auto">
                         "{currentProblem.questionText}"
@@ -261,8 +277,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, gameId, onF
                         <span>{currentProblem.num2}</span>
                     </div>
                 )}
-                
-                {/* For complex word problems or rounding, maybe emphasize the key number if needed, but text usually suffices */}
             </div>
 
             {/* Input Section */}

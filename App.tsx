@@ -1,12 +1,15 @@
+
 import React, { useState } from 'react';
-import { GameState, PlayerState, CharacterConfig, GameId } from './types';
+import { GameState, PlayerState, CharacterConfig, GameId, GameStats } from './types';
 import IntroScreen from './components/IntroScreen';
 import GameScreen from './components/GameScreen';
 import SummaryScreen from './components/SummaryScreen';
 import DashboardScreen from './components/DashboardScreen';
+import StudentProfile from './components/StudentProfile';
 import DynamicBackground from './components/DynamicBackground';
 import MissionSelect from './components/MissionSelect';
-import { Trophy, Menu, X, Home, Gamepad2, Lock } from 'lucide-react';
+import Avatar from './components/Avatar';
+import { Trophy, Menu, X, Home, Gamepad2, Lock, User } from 'lucide-react';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>('INTRO');
@@ -17,6 +20,9 @@ const App: React.FC = () => {
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState(false);
   
+  // Initial stats helper
+  const initialGameStats: GameStats = { highScore: 0, timesPlayed: 0, totalScore: 0, medals: { gold: 0, silver: 0, bronze: 0 } };
+
   const [playerState, setPlayerState] = useState<PlayerState>({
     name: '',
     character: {
@@ -28,7 +34,14 @@ const App: React.FC = () => {
     streak: 0,
     hasShield: false,
     hintsUsed: 0,
-    history: []
+    history: [],
+    stats: {
+        space: { ...initialGameStats },
+        dino: { ...initialGameStats },
+        cave: { ...initialGameStats },
+        ocean: { ...initialGameStats },
+        city: { ...initialGameStats },
+    }
   });
 
   const handleStartIntro = (name: string, config: CharacterConfig) => {
@@ -47,21 +60,49 @@ const App: React.FC = () => {
   };
 
   const handleGameFinish = (finalState: PlayerState) => {
-    setPlayerState(finalState);
+    // Calculate new stats
+    const currentScore = finalState.score;
+    let medalEarned: 'gold' | 'silver' | 'bronze' | null = null;
+    
+    if (currentScore === 100) medalEarned = 'gold';
+    else if (currentScore >= 80) medalEarned = 'silver';
+    else if (currentScore >= 50) medalEarned = 'bronze';
+
+    setPlayerState(prev => {
+        const oldGameStats = prev.stats[gameId];
+        const newGameStats = {
+            highScore: Math.max(oldGameStats.highScore, currentScore),
+            timesPlayed: oldGameStats.timesPlayed + 1,
+            totalScore: oldGameStats.totalScore + currentScore,
+            medals: {
+                ...oldGameStats.medals,
+                ...(medalEarned ? { [medalEarned]: oldGameStats.medals[medalEarned] + 1 } : {})
+            }
+        };
+
+        return {
+            ...finalState, // Keeps history/score of current session
+            stats: {
+                ...prev.stats,
+                [gameId]: newGameStats
+            }
+        };
+    });
     setGameState('SUMMARY');
   };
 
   const handleRestart = () => {
-    setPlayerState({
-      name: playerState.name,
-      character: playerState.character, // Keep character settings
+    setPlayerState(prev => ({
+      ...prev,
+      // Reset session data
       score: 0,
       streak: 0,
       hasShield: false,
       hintsUsed: 0,
       history: []
-    });
-    setGameState('MISSION_SELECT'); // Go back to mission select instead of direct replay
+      // Stats are preserved via ...prev
+    }));
+    setGameState('MISSION_SELECT'); 
     setBackgroundPhase('start');
   };
 
@@ -87,13 +128,30 @@ const App: React.FC = () => {
     setGameId('space');
   };
 
+  const getHeaderTitle = () => {
+    if (gameState === 'INTRO') return 'Majesty Maths Adventure';
+    if (gameState === 'MISSION_SELECT') return 'Mission Control Center';
+    if (gameState === 'DASHBOARD') return 'Teacher Dashboard';
+    if (gameState === 'SUMMARY') return 'Mission Summary';
+    if (gameState === 'STUDENT_PROFILE') return 'Cadet Profile';
+
+    const titles: Record<GameId, string> = {
+      space: 'Space Station Saver',
+      dino: 'Dino Discovery',
+      cave: 'Crystal Cave',
+      ocean: 'Ocean Odyssey',
+      city: 'Sky City Builder'
+    };
+    return titles[gameId] || 'Majesty Maths Adventure';
+  };
+
   return (
     <div className="min-h-screen bg-[#0f172a] text-white font-sans flex flex-col relative overflow-hidden selection:bg-cyan-500/30 selection:text-cyan-200">
       {/* Background updates based on Game ID */}
       <DynamicBackground phase={backgroundPhase} gameId={gameState === 'PLAYING' ? gameId : 'space'} />
       
       {/* Header */}
-      <header className="p-4 z-20 flex justify-between items-center bg-slate-900/60 backdrop-blur-xl border-b border-white/10 shadow-lg relative">
+      <header className="p-4 z-20 flex justify-between items-center bg-slate-900/60 backdrop-blur-xl border-b border-white/10 shadow-lg relative h-20">
         <div className="flex items-center gap-4">
            {/* Burger Menu Button */}
            <button 
@@ -110,16 +168,44 @@ const App: React.FC = () => {
               <span className="text-yellow-400 font-['Cinzel'] text-[8px] tracking-[0.2em] uppercase font-bold drop-shadow-sm">International Schools</span>
            </div>
 
-           {/* Game Title */}
-           <div className="flex items-center gap-2 text-cyan-100">
-             <Trophy className="w-5 h-5 text-yellow-400 hidden sm:block" />
-             <h1 className="text-lg font-bold tracking-wide font-['Orbitron'] text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-300">Space Station Saver</h1>
+           {/* Branding - Left Side */}
+           <div className="flex flex-col justify-center">
+             <span className="text-cyan-100 font-bold text-sm sm:text-base tracking-wide font-['Fredoka']">Ms. Nada Lymouna</span>
+             <span className="text-slate-400 text-[10px] sm:text-xs uppercase tracking-wider font-medium">Year 3 Math Adventures</span>
            </div>
         </div>
         
-        <div className="text-right hidden sm:block">
-          <div className="text-xs text-cyan-200/80 font-bold">Ms. Nada Lymouna</div>
-          <div className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">Year 3 Math Adventure</div>
+        {/* Right Side: Dynamic Game Name & User Profile */}
+        <div className="flex items-center gap-4">
+           {playerState.name && (
+             <>
+                {/* Game Title */}
+                <div className="text-right hidden md:block">
+                  <div className="text-[10px] text-cyan-500 uppercase tracking-widest font-bold">Current Protocol</div>
+                  <h1 className="text-sm sm:text-lg font-bold tracking-wide font-['Orbitron'] text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-300 drop-shadow-sm">
+                    {getHeaderTitle()}
+                  </h1>
+                </div>
+
+                {/* Player Profile - Clickable */}
+                <button 
+                  onClick={() => setGameState('STUDENT_PROFILE')}
+                  className="flex items-center gap-3 pl-4 border-l border-white/10 cursor-pointer group hover:bg-white/5 p-2 rounded-xl transition-all"
+                  title="Open Cadet Profile"
+                >
+                    <div className="text-right hidden sm:block">
+                        <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider group-hover:text-cyan-400 transition-colors">Cadet</div>
+                        <div className="text-sm font-bold text-white font-['Orbitron'] group-hover:text-cyan-200 transition-colors">{playerState.name}</div>
+                    </div>
+                    <div className="relative">
+                        <div className="absolute inset-0 bg-cyan-500/20 rounded-full blur-md group-hover:bg-cyan-400/30 transition-all"></div>
+                        <div className="w-10 h-10 rounded-full bg-slate-800 border border-white/20 overflow-hidden relative z-10 ring-2 ring-transparent group-hover:ring-cyan-400/50 transition-all">
+                            <Avatar config={playerState.character} size="sm" className="w-full h-full transform scale-125 translate-y-1" />
+                        </div>
+                    </div>
+                </button>
+             </>
+           )}
         </div>
       </header>
 
@@ -150,6 +236,12 @@ const App: React.FC = () => {
                 <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 <span className="font-bold">Home Base</span>
               </button>
+              {playerState.name && (
+                <button onClick={() => { setGameState('STUDENT_PROFILE'); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-purple-500/20 text-slate-200 hover:text-purple-300 rounded-xl transition-all text-left border border-transparent hover:border-purple-500/30 group">
+                  <User className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span className="font-bold">My Profile</span>
+                </button>
+              )}
             </div>
 
             <div className="space-y-2 pt-4 border-t border-white/10">
@@ -176,6 +268,22 @@ const App: React.FC = () => {
                 <div>
                   <span className="font-bold block">Crystal Cave</span>
                   <span className="text-[10px] text-purple-400 uppercase tracking-wider">Place Value</span>
+                </div>
+              </button>
+
+              <button onClick={() => { setGameId('ocean'); setGameState('PLAYING'); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 bg-teal-900/20 hover:bg-teal-900/40 border border-teal-500/20 hover:border-teal-500/50 text-teal-100 rounded-xl transition-all text-left">
+                <Gamepad2 className="w-5 h-5 text-teal-400" />
+                <div>
+                  <span className="font-bold block">Ocean Odyssey</span>
+                  <span className="text-[10px] text-teal-400 uppercase tracking-wider">Fractions</span>
+                </div>
+              </button>
+
+              <button onClick={() => { setGameId('city'); setGameState('PLAYING'); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 bg-sky-900/20 hover:bg-sky-900/40 border border-sky-500/20 hover:border-sky-500/50 text-sky-100 rounded-xl transition-all text-left">
+                <Gamepad2 className="w-5 h-5 text-sky-400" />
+                <div>
+                  <span className="font-bold block">Sky City Builder</span>
+                  <span className="text-[10px] text-sky-400 uppercase tracking-wider">Geometry</span>
                 </div>
               </button>
             </div>
@@ -261,6 +369,12 @@ const App: React.FC = () => {
             currentPlayer={playerState} 
             onBack={handleNavigateHome} 
           />
+        )}
+        {gameState === 'STUDENT_PROFILE' && (
+           <StudentProfile 
+             player={playerState}
+             onBack={() => setGameState('MISSION_SELECT')}
+           />
         )}
       </main>
     </div>
