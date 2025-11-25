@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Shield, Star, AlertCircle, CheckCircle, Brain, Lightbulb, Rocket, Trees, Gem, Anchor, Building2 } from 'lucide-react';
+import { Shield, Star, AlertCircle, CheckCircle, Brain, Lightbulb, Rocket, Trees, Gem, Anchor, Building2, Clock } from 'lucide-react';
 import { PlayerState, MathProblem, GameId } from '../types';
 import { getGameBatch } from '../services/math';
 import Button from './Button';
@@ -34,6 +34,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, gameId, onF
     cave: { accent: 'text-purple-400', border: 'focus:border-purple-500', button: 'warning', icon: Gem, bgIcon: 'bg-purple-500', gradient: 'from-purple-500 to-pink-500', shapeColor: 'text-purple-400' },
     ocean: { accent: 'text-teal-400', border: 'focus:border-teal-500', button: 'primary', icon: Anchor, bgIcon: 'bg-teal-500', gradient: 'from-teal-400 to-cyan-500', shapeColor: 'text-teal-400' },
     city: { accent: 'text-sky-400', border: 'focus:border-sky-500', button: 'secondary', icon: Building2, bgIcon: 'bg-sky-500', gradient: 'from-sky-400 to-indigo-500', shapeColor: 'text-sky-400' },
+    time: { accent: 'text-amber-400', border: 'focus:border-amber-500', button: 'warning', icon: Clock, bgIcon: 'bg-amber-500', gradient: 'from-amber-400 to-orange-500', shapeColor: 'text-amber-400' },
   }[gameId];
 
   // Initial Game Load
@@ -73,10 +74,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, gameId, onF
     e?.preventDefault();
     if (!currentProblem || status === 'loading' || !userAnswer) return;
 
-    const val = parseInt(userAnswer);
-    if (isNaN(val)) return;
-
-    if (val === currentProblem.answer) {
+    // Normalize Answer for comparison
+    const normalize = (val: string | number) => String(val).trim().toLowerCase();
+    
+    if (normalize(userAnswer) === normalize(currentProblem.answer)) {
       handleCorrect();
     } else {
       handleWrong();
@@ -161,6 +162,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, gameId, onF
     if (operation === 'val') return `Think about Place Value columns (H, T, O).`;
     if (operation === 'frac') return `1/${num2} means divide by ${num2}.`;
     if (operation === 'geo') return `Count carefully!`;
+    if (operation === 'time') return `Check the hour hand (short) and minute hand (long).`;
 
     return "Check your calculation carefully.";
   };
@@ -180,16 +182,19 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, gameId, onF
   // Operation symbol logic
   let symbol = '';
   switch (currentProblem.operation) {
-      case 'add': case 'val': symbol = '+'; break; // 'val' can be abstract, but + often fits visualization
+      case 'add': case 'val': symbol = '+'; break; 
       case 'sub': symbol = '-'; break;
       case 'mul': symbol = '×'; break;
       case 'div': symbol = '÷'; break;
       case 'round': symbol = '≈'; break;
       case 'frac': symbol = 'f'; break;
       case 'geo': symbol = '?'; break;
+      case 'time': symbol = 'T'; break;
   }
 
-  // For mixed types or specific modes, we might not show standard equation format
+  // Determine Input Type
+  const isTextAnswer = typeof currentProblem.answer === 'string';
+
   const showStandardEquation = !currentProblem.isWordProblem && ['add', 'sub', 'mul', 'div'].includes(currentProblem.operation);
 
   return (
@@ -285,14 +290,14 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, gameId, onF
                      <div className="relative flex-1">
                         <input
                             ref={inputRef}
-                            type="number" 
+                            type={isTextAnswer ? "text" : "number"}
                             value={userAnswer}
                             onChange={(e) => setUserAnswer(e.target.value)}
                             className={`w-full bg-slate-950/80 border-2 rounded-2xl px-6 py-4 text-3xl text-center font-['Orbitron'] font-bold outline-none transition-all shadow-inner
                                 ${status === 'wrong' ? 'border-red-500 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 
                                 status === 'correct' ? 'border-green-500 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.2)]' : 
                                 `border-slate-700 ${theme.border} text-white`}`}
-                            placeholder="?"
+                            placeholder={isTextAnswer ? "..." : "?"}
                             autoComplete="off"
                             disabled={status === 'correct'}
                         />

@@ -11,7 +11,8 @@ const getInitialStats = (): Record<GameId, GameStats> => {
         dino: { ...emptyStat },
         cave: { ...emptyStat },
         ocean: { ...emptyStat },
-        city: { ...emptyStat }
+        city: { ...emptyStat },
+        time: { ...emptyStat }
     };
 };
 

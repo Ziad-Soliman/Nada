@@ -11,7 +11,7 @@ import MissionSelect from './components/MissionSelect';
 import Avatar from './components/Avatar';
 import { saveStudentProgress } from './services/storage';
 import { syncScoreToNotion, syncProfileToNotion } from './services/notion';
-import { Menu, X, Home, Gamepad2, Lock, User } from 'lucide-react';
+import { Menu, X, Home, Gamepad2, Lock, User, Clock } from 'lucide-react';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>('INTRO');
@@ -47,6 +47,7 @@ const App: React.FC = () => {
         cave: { ...initialGameStats },
         ocean: { ...initialGameStats },
         city: { ...initialGameStats },
+        time: { ...initialGameStats },
     },
     lastPlayed: new Date().toISOString()
   });
@@ -113,7 +114,6 @@ const App: React.FC = () => {
         saveStudentProgress(updatedProfile);
         
         // Sync to Notion (Cloud) - Non-blocking
-        // We pass the exact 'rank' string. If Notion doesn't have it, it will create it (if column is Select type).
         syncScoreToNotion(updatedProfile, gameId, currentScore, maxScore, rank, finalState.hintsUsed);
 
         return updatedProfile;
@@ -157,8 +157,6 @@ const App: React.FC = () => {
     setIsMenuOpen(false);
     setBackgroundPhase('start');
     setGameId('space');
-    // Reset player state somewhat to ensure they log in again if they go 'Home' completely?
-    // Or just let them be logged in. Usually 'Home' implies Mission Select if logged in, or Intro if logging out.
     // For safety, let's keep them logged in but return to Mission Select if they have a profile.
     if (playerState.firstName) {
         setGameState('MISSION_SELECT');
@@ -185,7 +183,8 @@ const App: React.FC = () => {
       dino: 'Dino Discovery',
       cave: 'Crystal Cave',
       ocean: 'Ocean Odyssey',
-      city: 'Sky City Builder'
+      city: 'Sky City Builder',
+      time: 'Time Warp Chronicles'
     };
     return titles[gameId] || 'Majesty Maths Adventure';
   };
@@ -329,6 +328,14 @@ const App: React.FC = () => {
                 <div>
                   <span className="font-bold block">Sky City Builder</span>
                   <span className="text-[10px] text-sky-400 uppercase tracking-wider">Geometry</span>
+                </div>
+              </button>
+
+              <button onClick={() => { setGameId('time'); setGameState('PLAYING'); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 bg-amber-900/20 hover:bg-amber-900/40 border border-amber-500/20 hover:border-amber-500/50 text-amber-100 rounded-xl transition-all text-left">
+                <Clock className="w-5 h-5 text-amber-400" />
+                <div>
+                  <span className="font-bold block">Time Warp</span>
+                  <span className="text-[10px] text-amber-400 uppercase tracking-wider">Time & Calendar</span>
                 </div>
               </button>
             </div>

@@ -44,7 +44,8 @@ export const syncScoreToNotion = async (player: PlayerState, gameId: GameId, sco
         dino: 'Dino Discovery',
         cave: 'Crystal Cave',
         ocean: 'Ocean Odyssey',
-        city: 'Sky City Builder'
+        city: 'Sky City Builder',
+        time: 'Time Warp Chronicles'
     };
     
     const title = gameTitles[gameId] || gameId.charAt(0).toUpperCase() + gameId.slice(1);

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { GameId } from '../types';
 
@@ -67,6 +68,15 @@ const DynamicBackground: React.FC<DynamicBackgroundProps> = ({ phase, gameId }) 
         overlayGradient: 'from-sky-500/20 to-transparent',
         nebulaColors: ['bg-sky-900/40', 'bg-blue-900/30', 'bg-indigo-900/30'],
         texture: "url('https://www.transparenttextures.com/patterns/carbon-fibre.png')"
+    },
+    time: {
+        bg: 'bg-amber-950',
+        particleColor: 'bg-orange-200/50', 
+        particleShape: 'rounded-full', 
+        image: "url('https://images.unsplash.com/photo-1508962914676-134849a727f0?q=80&w=2669&auto=format&fit=crop')", // Clock/Gears
+        overlayGradient: 'from-amber-500/20 to-transparent',
+        nebulaColors: ['bg-amber-900/50', 'bg-orange-900/40', 'bg-yellow-900/30'],
+        texture: "url('https://www.transparenttextures.com/patterns/gears.png')"
     }
   };
 

@@ -14,17 +14,55 @@ const ShapeDisplay: React.FC<ShapeDisplayProps> = ({ type, className = '' }) => 
   };
 
   const renderShape = () => {
+    // Handle Clock Visuals (Format: "clock:HH:MM")
+    if (type.startsWith('clock:')) {
+      const timeParts = type.split(':')[1] ? type.split(':').slice(1) : ['12', '00'];
+      const hour = parseInt(timeParts[0]);
+      const minute = parseInt(timeParts[1]);
+
+      // Calculate angles
+      const minuteAngle = minute * 6; // 360 / 60
+      const hourAngle = (hour % 12) * 30 + (minute * 0.5); // 360 / 12 + minute adjustment
+
+      return (
+        <g fill="none" stroke="currentColor" {...commonProps}>
+          {/* Clock Face */}
+          <circle cx="50" cy="50" r="45" strokeWidth="2" />
+          {/* Hour Markers */}
+          {[...Array(12)].map((_, i) => (
+             <line 
+               key={i}
+               x1="50" y1="10" x2="50" y2="15" 
+               transform={`rotate(${i * 30} 50 50)`} 
+               strokeWidth="2"
+             />
+          ))}
+          {/* Hour Hand */}
+          <line 
+            x1="50" y1="50" x2="50" y2="25" 
+            strokeWidth="3" 
+            transform={`rotate(${hourAngle} 50 50)`}
+          />
+          {/* Minute Hand */}
+          <line 
+            x1="50" y1="50" x2="50" y2="15" 
+            strokeWidth="2" 
+            transform={`rotate(${minuteAngle} 50 50)`}
+          />
+          {/* Center Dot */}
+          <circle cx="50" cy="50" r="2" fill="currentColor" />
+        </g>
+      );
+    }
+
     switch (type) {
       // 3D Shapes
       case 'cube':
         return (
           <g fill="none" stroke="currentColor" {...commonProps}>
-            {/* Front Face */}
             <rect x="25" y="35" width="50" height="50" />
-            {/* Back Face */}
             <path d="M40 20 L90 20 L90 70" strokeDasharray="4 4" opacity="0.6" />
             <path d="M40 20 L40 70 L90 70" strokeDasharray="4 4" opacity="0.6" />
-            {/* Connecting Lines */}
             <path d="M25 35 L40 20" strokeDasharray="4 4" opacity="0.6" />
             <path d="M75 35 L90 20" />
             <path d="M75 85 L90 70" />
@@ -34,12 +72,9 @@ const ShapeDisplay: React.FC<ShapeDisplayProps> = ({ type, className = '' }) => 
       case 'cuboid':
         return (
           <g fill="none" stroke="currentColor" {...commonProps}>
-             {/* Front Face */}
              <rect x="15" y="40" width="60" height="40" />
-             {/* Back Face */}
              <path d="M35 20 L95 20 L95 60" strokeDasharray="4 4" opacity="0.6" />
              <path d="M35 20 L35 60 L95 60" strokeDasharray="4 4" opacity="0.6" />
-             {/* Connecting Lines */}
              <path d="M15 40 L35 20" strokeDasharray="4 4" opacity="0.6" />
              <path d="M75 40 L95 20" />
              <path d="M75 80 L95 60" />
@@ -76,15 +111,11 @@ const ShapeDisplay: React.FC<ShapeDisplayProps> = ({ type, className = '' }) => 
       case 'square-pyramid':
         return (
           <g fill="none" stroke="currentColor" {...commonProps}>
-            {/* Base */}
             <path d="M20 75 L80 75 L90 60 L30 60 Z" strokeDasharray="4 4" opacity="0.6" />
-            {/* Visible Base Front */}
             <path d="M20 75 L80 75" />
-             {/* Edges to apex */}
             <path d="M50 15 L20 75" />
             <path d="M50 15 L80 75" />
             <path d="M50 15 L90 60" />
-             {/* Hidden Edge */}
             <path d="M50 15 L30 60" strokeDasharray="4 4" opacity="0.6" />
           </g>
         );

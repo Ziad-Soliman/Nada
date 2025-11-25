@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { GameId } from '../types';
-import { Rocket, Trees, Gem, ArrowRight, Lock, Anchor, Building2 } from 'lucide-react';
+import { Rocket, Trees, Gem, ArrowRight, Lock, Anchor, Building2, Clock } from 'lucide-react';
 
 interface MissionSelectProps {
   onSelect: (gameId: GameId) => void;
@@ -59,6 +60,16 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
       shadow: 'shadow-sky-500/40',
       description: "Construct the future! Identify 3D shapes, edges, vertices, and angles.",
       difficulty: 'Easy'
+    },
+    {
+      id: 'time' as GameId,
+      title: 'Time Warp',
+      subtitle: 'Time & Calendar',
+      icon: Clock,
+      color: 'from-amber-400 to-orange-600',
+      shadow: 'shadow-amber-500/40',
+      description: "Sync your chronometer! Read clocks, calculate durations, and master the week.",
+      difficulty: 'Normal'
     }
   ];
 

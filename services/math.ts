@@ -4,6 +4,7 @@ import { MathProblem, GameId } from '../types';
 // --- CONFIGURATION & UTILS ---
 
 const NAMES = ["Captain Nova", "Ranger Leo", "Dr. Sarah", "Pilot Orion", "Engineer Sam", "Luna", "Astro", "Starla", "Major Tom", "Sky", "Zara", "Ben", "Omar", "Maya", "Kaito"];
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 // --- WORD PROBLEM TEMPLATES ---
 
@@ -207,7 +208,6 @@ function generateDinoBatch(): MathProblem[] {
     const batch: MathProblem[] = [];
     const tables = [3, 4, 8]; // Key Year 3
     const reviewTables = [2, 5, 10]; // Review
-    const allTables = [...tables, ...reviewTables];
     const count = 15;
 
     for (let i = 0; i < count; i++) {
@@ -469,6 +469,85 @@ function generateCityBatch(): MathProblem[] {
   return shuffleArray(batch);
 }
 
+function generateTimeBatch(): MathProblem[] {
+  const batch: MathProblem[] = [];
+  const count = 15;
+
+  for (let i = 0; i < count; i++) {
+    const type = getRandomInt(1, 4); // 1: Clock Reading, 2: Duration, 3: Calendar, 4: Time Facts
+    
+    if (type === 1) {
+        // Analogue Clock Reading
+        // Generate time in 5 min intervals for Year 3
+        const hour = getRandomInt(1, 12);
+        const minute = getRandomItem([0, 15, 30, 45, 5, 10, 20, 25, 35, 40, 50, 55]);
+        const minStr = minute < 10 ? `0${minute}` : `${minute}`;
+        const answer = `${hour}:${minStr}`;
+        
+        batch.push({
+            num1: 0, num2: 0, operation: 'time', answer: answer, isWordProblem: false,
+            questionText: "What time is shown on the clock? (Format: 3:00)",
+            visualType: `clock:${answer}`
+        });
+    } else if (type === 2) {
+        // Duration: Start time + minutes
+        const startHour = getRandomInt(1, 11);
+        const startMin = 0; // Simple start times for Year 3
+        const addMin = getRandomItem([30, 15, 60, 45]);
+        
+        let endHour = startHour;
+        let endMin = startMin + addMin;
+        
+        if (endMin >= 60) {
+            endHour += Math.floor(endMin / 60);
+            endMin = endMin % 60;
+        }
+        
+        const endMinStr = endMin < 10 ? `0${endMin}` : `${endMin}`;
+        const answer = `${endHour}:${endMinStr}`;
+        
+        batch.push({
+            num1: 0, num2: 0, operation: 'time', answer: answer, isWordProblem: true,
+            questionText: `It is ${startHour}:00. What time will it be in ${addMin} minutes?`
+        });
+    } else if (type === 3) {
+        // Calendar: Days of Week
+        const subType = getRandomInt(1, 2);
+        if (subType === 1) {
+            // "What comes after X?"
+            const idx = getRandomInt(0, 5); // 0-5 (Mon-Sat)
+            const day = DAYS[idx];
+            const answer = DAYS[idx + 1];
+            batch.push({
+                num1: 0, num2: 0, operation: 'time', answer: answer, isWordProblem: true,
+                questionText: `What day comes after ${day}?`
+            });
+        } else {
+             // "If today is X, what is tomorrow?"
+            const idx = getRandomInt(0, 6);
+            const day = DAYS[idx];
+            const nextIdx = (idx + 1) % 7;
+            const answer = DAYS[nextIdx];
+             batch.push({
+                num1: 0, num2: 0, operation: 'time', answer: answer, isWordProblem: true,
+                questionText: `If today is ${day}, what day is tomorrow?`
+            });
+        }
+    } else {
+        // Facts
+        const factType = getRandomInt(1, 3);
+        if (factType === 1) {
+            batch.push({ num1: 0, num2: 0, operation: 'time', answer: 7, isWordProblem: true, questionText: "How many days are in a week?" });
+        } else if (factType === 2) {
+            batch.push({ num1: 0, num2: 0, operation: 'time', answer: 60, isWordProblem: true, questionText: "How many minutes are in one hour?" });
+        } else {
+             batch.push({ num1: 0, num2: 0, operation: 'time', answer: 30, isWordProblem: true, questionText: "How many minutes is half an hour?" });
+        }
+    }
+  }
+  return shuffleArray(batch);
+}
+
 // --- PUBLIC API ---
 
 export const getGameBatch = (gameId: GameId): MathProblem[] => {
@@ -477,6 +556,7 @@ export const getGameBatch = (gameId: GameId): MathProblem[] => {
     case 'cave': return generateCaveBatch();
     case 'ocean': return generateOceanBatch();
     case 'city': return generateCityBatch();
+    case 'time': return generateTimeBatch();
     case 'space': default: return generateSpaceBatch();
   }
 };

@@ -2,8 +2,8 @@
 export interface MathProblem {
   num1: number;
   num2: number;
-  operation: 'add' | 'sub' | 'mul' | 'div' | 'val' | 'round' | 'frac' | 'geo';
-  answer: number;
+  operation: 'add' | 'sub' | 'mul' | 'div' | 'val' | 'round' | 'frac' | 'geo' | 'time';
+  answer: number | string;
   questionText?: string;
   isWordProblem: boolean;
   visualType?: string;
@@ -11,7 +11,7 @@ export interface MathProblem {
 
 export type GameState = 'INTRO' | 'MISSION_SELECT' | 'PLAYING' | 'SUMMARY' | 'DASHBOARD' | 'STUDENT_PROFILE';
 
-export type GameId = 'space' | 'dino' | 'cave' | 'ocean' | 'city';
+export type GameId = 'space' | 'dino' | 'cave' | 'ocean' | 'city' | 'time';
 
 export type ClassId = '3A' | '3B' | '3C';
 
