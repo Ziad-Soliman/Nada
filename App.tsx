@@ -105,6 +105,7 @@ const App: React.FC = () => {
         saveStudentProgress(updatedProfile);
         
         // Sync to Notion (Cloud) - Non-blocking
+        // We pass 'finalState.hintsUsed' directly as it tracks the current session usage
         syncScoreToNotion(updatedProfile, gameId, currentScore, rank, finalState.hintsUsed);
 
         return updatedProfile;
@@ -286,7 +287,7 @@ const App: React.FC = () => {
               <button onClick={() => { setGameId('space'); setGameState('PLAYING'); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 bg-cyan-900/20 hover:bg-cyan-900/40 border border-cyan-500/20 hover:border-cyan-500/50 text-cyan-100 rounded-xl transition-all text-left">
                 <Gamepad2 className="w-5 h-5 text-cyan-400" />
                 <div>
-                  <span className="font-bold block">Space Saver</span>
+                  <span className="font-bold block">Space Station Saver</span>
                   <span className="text-[10px] text-cyan-400 uppercase tracking-wider">Add & Sub</span>
                 </div>
               </button>

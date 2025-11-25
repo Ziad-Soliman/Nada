@@ -1,6 +1,12 @@
 import { PlayerState, GameId } from '../types';
 
 export const syncScoreToNotion = async (player: PlayerState, gameId: GameId, score: number, rank: string, hintsUsed: number) => {
+    
+    // Check for Localhost environment issues
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        console.warn("NOTION SYNC WARNING: You are running on localhost. The /api/sync-notion route will likely fail (404/500) unless you are running 'vercel dev'. Standard 'npm run dev' does not support serverless functions.");
+    }
+
     try {
         const gameTitles: Record<GameId, string> = {
             space: 'Space Station Saver',
@@ -28,6 +34,8 @@ export const syncScoreToNotion = async (player: PlayerState, gameId: GameId, sco
             }
         };
 
+        console.log("📡 Syncing to Notion...", payload);
+
         const response = await fetch('/api/sync-notion', {
             method: 'POST',
             headers: {
@@ -36,12 +44,22 @@ export const syncScoreToNotion = async (player: PlayerState, gameId: GameId, sco
             body: JSON.stringify(payload),
         });
 
-        if (!response.ok) {
-            console.warn('Failed to sync to Notion via Vercel API');
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+            const result = await response.json();
+            if (!response.ok) {
+                console.error('❌ Notion Sync Error:', result);
+                if (result.details) console.error(`   Details: ${result.details}`);
+            } else {
+                console.log('✅ Notion Sync Success:', result);
+            }
         } else {
-            console.log('Successfully synced game data to Notion');
+            // If response is not JSON (e.g., standard Vercel 404/500 HTML page)
+            const text = await response.text();
+            console.error(`❌ Notion Sync Critical Error (${response.status}):`, text.substring(0, 200));
         }
+
     } catch (e) {
-        console.error("Error syncing to Notion:", e);
+        console.error("❌ Network Error calling Notion API:", e);
     }
 };
