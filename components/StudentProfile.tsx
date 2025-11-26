@@ -34,7 +34,7 @@ const StudentProfile: React.FC<StudentProfileProps> = ({ player, onBack }) => {
   else if (totalScore > 200) { rank = "Space Cadet"; rankColor = "text-blue-400"; }
 
   return (
-    <div className="w-full max-w-5xl bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.6)] animate-fade-in flex flex-col max-h-[90vh]">
+    <div className="w-full max-w-5xl bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-3xl shadow-[0_0_60px_rgba(0,0,0,0.6)] animate-fade-in flex flex-col">
       
       {/* Header Profile Section */}
       <div className="p-8 pb-0 flex flex-col md:flex-row items-center gap-8 relative">
@@ -87,7 +87,7 @@ const StudentProfile: React.FC<StudentProfileProps> = ({ player, onBack }) => {
       </div>
 
       {/* Main Content - Game Stats Grid */}
-      <div className="p-8 overflow-y-auto">
+      <div className="p-8">
          <h3 className="text-lg font-bold text-white font-['Orbitron'] mb-6 flex items-center gap-2">
             <Trophy className="w-5 h-5 text-yellow-500" /> Mission Records
          </h3>

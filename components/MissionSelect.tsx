@@ -18,7 +18,7 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
       icon: Rocket,
       color: 'from-cyan-500 to-blue-600',
       shadow: 'shadow-cyan-500/40',
-      description: "Critical Power Failure! Add and subtract 2-digit numbers to repair the solar array and save the station!",
+      description: "Critical Power Failure! Use your mental addition and subtraction skills with 2-digit numbers to repair the solar array and save the station!",
       difficulty: 'Normal'
     },
     {
@@ -28,7 +28,7 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
       icon: Trees,
       color: 'from-green-500 to-emerald-700',
       shadow: 'shadow-green-500/40',
-      description: "T-Rex Alert! Multiply and divide by 3, 4, and 8 to track dinosaur movements and uncover ancient fossils.",
+      description: "T-Rex Alert! Track dinosaur movements and uncover ancient fossils by mastering multiplication and division facts (3, 4, and 8 tables).",
       difficulty: 'Hard'
     },
     {
@@ -38,7 +38,7 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
       icon: Gem,
       color: 'from-purple-500 to-fuchsia-700',
       shadow: 'shadow-purple-500/40',
-      description: "The Crystal Mines await! Master place value and rounding to 10 and 100 to extract the most valuable gems.",
+      description: "The Crystal Mines are unstable! Navigate safely by mastering place value (hundreds, tens, ones) and rounding numbers to the nearest 10 or 100.",
       difficulty: 'Normal'
     },
     {
@@ -48,7 +48,7 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
       icon: Anchor,
       color: 'from-teal-500 to-cyan-600',
       shadow: 'shadow-teal-500/40',
-      description: "Explore the Abyss! Calculate fractions of amounts (1/2, 1/4) and solve underwater equations.",
+      description: "Dive into the Abyss! Operate the submarine by calculating fractions of amounts (like 1/2 and 1/4) and solving underwater equations.",
       difficulty: 'Normal'
     },
     {
@@ -58,7 +58,7 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
       icon: Building2,
       color: 'from-sky-400 to-indigo-500',
       shadow: 'shadow-sky-500/40',
-      description: "Architect Needed! Identify 3D shapes, count vertices, and spot right angles to build the ultimate Sky City.",
+      description: "Architect Needed! Construct the ultimate skyline by identifying 3D shapes, counting their properties (edges, vertices), and spotting right angles.",
       difficulty: 'Easy'
     },
     {
@@ -68,7 +68,7 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
       icon: Clock,
       color: 'from-amber-400 to-orange-600',
       shadow: 'shadow-amber-500/40',
-      description: "Temporal Anomaly! Read analogue clocks, calculate time intervals, and navigate the calendar to fix the timeline.",
+      description: "Temporal Anomaly Detected! Repair the timeline by reading analogue clocks, calculating time durations, and using calendar facts.",
       difficulty: 'Normal'
     }
   ];

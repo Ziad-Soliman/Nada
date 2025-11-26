@@ -404,8 +404,8 @@ const App: React.FC = () => {
       )}
 
       {/* Main Content */}
-      <main className="flex-grow flex flex-col items-center p-4 z-10 w-full overflow-y-auto">
-        <div className="w-full max-w-7xl mx-auto my-auto flex flex-col items-center justify-center">
+      <main className="flex-grow flex flex-col items-center p-4 z-10 w-full">
+        <div className="w-full max-w-7xl mx-auto py-8 flex flex-col items-center">
           {gameState === 'INTRO' && (
             <IntroScreen onStart={handleStartIntro} />
           )}
