@@ -74,7 +74,7 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
   ];
 
   return (
-    <div className="w-full max-w-5xl p-6 animate-fade-in h-full overflow-y-auto pb-20">
+    <div className="w-full max-w-5xl p-6 animate-fade-in pb-20">
        <div className="text-center mb-8">
           <h2 className="text-3xl font-['Orbitron'] font-bold text-white mb-2">Welcome, {playerName}</h2>
           <p className="text-slate-400">Select your mission to begin training.</p>

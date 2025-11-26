@@ -191,12 +191,12 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white font-sans flex flex-col relative overflow-hidden selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="min-h-screen bg-[#0f172a] text-white font-sans flex flex-col relative selection:bg-cyan-500/30 selection:text-cyan-200">
       {/* Background updates based on Game ID */}
       <DynamicBackground phase={backgroundPhase} gameId={gameState === 'PLAYING' ? gameId : 'space'} />
       
       {/* Header */}
-      <header className="p-4 z-20 flex justify-between items-center bg-slate-900/60 backdrop-blur-xl border-b border-white/10 shadow-lg relative h-20">
+      <header className="p-4 z-20 flex justify-between items-center bg-slate-900/60 backdrop-blur-xl border-b border-white/10 shadow-lg relative h-20 shrink-0">
         <div className="flex items-center gap-4">
            {/* Burger Menu Button */}
            <button 
@@ -404,7 +404,7 @@ const App: React.FC = () => {
       )}
 
       {/* Main Content */}
-      <main className="flex-grow flex items-center justify-center p-4 z-10 w-full">
+      <main className="flex-grow flex items-center justify-center p-4 z-10 w-full min-h-0">
         {gameState === 'INTRO' && (
           <IntroScreen onStart={handleStartIntro} />
         )}
