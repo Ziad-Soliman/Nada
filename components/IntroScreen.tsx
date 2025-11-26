@@ -60,11 +60,11 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onStart }) => {
 
   if (step === 'details') {
     return (
-      <div className="max-w-md w-full bg-slate-900/80 backdrop-blur-xl p-8 rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-white/10 text-center animate-fade-in relative overflow-hidden">
+      <div className="max-w-md w-full bg-slate-900/80 backdrop-blur-xl p-8 rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-white/10 text-center animate-fade-in relative">
         
         {/* Decorative glow */}
-        <div className="absolute -top-20 -left-20 w-40 h-40 bg-cyan-500/20 blur-[80px] rounded-full"></div>
-        <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-purple-500/20 blur-[80px] rounded-full"></div>
+        <div className="absolute -top-20 -left-20 w-40 h-40 bg-cyan-500/20 blur-[80px] rounded-full pointer-events-none"></div>
+        <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-purple-500/20 blur-[80px] rounded-full pointer-events-none"></div>
 
         {/* School Branding */}
         <div className="mb-6 pb-6 border-b border-white/10 relative z-10">
@@ -136,7 +136,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onStart }) => {
   }
 
   return (
-    <div className="max-w-3xl w-full bg-slate-900/90 backdrop-blur-xl p-8 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.6)] border border-white/10 animate-fade-in flex flex-col md:flex-row gap-10 items-center relative overflow-hidden">
+    <div className="max-w-3xl w-full bg-slate-900/90 backdrop-blur-xl p-8 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.6)] border border-white/10 animate-fade-in flex flex-col md:flex-row gap-10 items-center relative">
       
        {/* Decorative glow */}
        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>

@@ -18,7 +18,7 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
       icon: Rocket,
       color: 'from-cyan-500 to-blue-600',
       shadow: 'shadow-cyan-500/40',
-      description: "Restore power to the station! Practice 2-digit addition and subtraction.",
+      description: "Critical Power Failure! Add and subtract 2-digit numbers to repair the solar array and save the station!",
       difficulty: 'Normal'
     },
     {
@@ -28,7 +28,7 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
       icon: Trees,
       color: 'from-green-500 to-emerald-700',
       shadow: 'shadow-green-500/40',
-      description: "Dig up fossils in the jungle! Practice 3, 4, 8 times tables.",
+      description: "T-Rex Alert! Multiply and divide by 3, 4, and 8 to track dinosaur movements and uncover ancient fossils.",
       difficulty: 'Hard'
     },
     {
@@ -38,7 +38,7 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
       icon: Gem,
       color: 'from-purple-500 to-fuchsia-700',
       shadow: 'shadow-purple-500/40',
-      description: "Collect rare gems underground! Rounding and place value mastery.",
+      description: "The Crystal Mines await! Master place value and rounding to 10 and 100 to extract the most valuable gems.",
       difficulty: 'Normal'
     },
     {
@@ -48,7 +48,7 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
       icon: Anchor,
       color: 'from-teal-500 to-cyan-600',
       shadow: 'shadow-teal-500/40',
-      description: "Dive deep! Find 1/2 and 1/4 of amounts and identify fractions.",
+      description: "Explore the Abyss! Calculate fractions of amounts (1/2, 1/4) and solve underwater equations.",
       difficulty: 'Normal'
     },
     {
@@ -58,7 +58,7 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
       icon: Building2,
       color: 'from-sky-400 to-indigo-500',
       shadow: 'shadow-sky-500/40',
-      description: "Construct the future! Identify 3D shapes, edges, vertices, and angles.",
+      description: "Architect Needed! Identify 3D shapes, count vertices, and spot right angles to build the ultimate Sky City.",
       difficulty: 'Easy'
     },
     {
@@ -68,7 +68,7 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
       icon: Clock,
       color: 'from-amber-400 to-orange-600',
       shadow: 'shadow-amber-500/40',
-      description: "Sync your chronometer! Read clocks, calculate durations, and master the week.",
+      description: "Temporal Anomaly! Read analogue clocks, calculate time intervals, and navigate the calendar to fix the timeline.",
       difficulty: 'Normal'
     }
   ];

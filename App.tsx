@@ -404,40 +404,42 @@ const App: React.FC = () => {
       )}
 
       {/* Main Content */}
-      <main className="flex-grow flex items-center justify-center p-4 z-10 w-full min-h-0">
-        {gameState === 'INTRO' && (
-          <IntroScreen onStart={handleStartIntro} />
-        )}
-        {gameState === 'MISSION_SELECT' && (
-          <MissionSelect onSelect={startNewSession} playerName={playerState.firstName} />
-        )}
-        {gameState === 'PLAYING' && (
-          <GameScreen 
-            initialPlayerState={playerState} 
-            gameId={gameId}
-            onFinish={handleGameFinish} 
-            setBackgroundPhase={setBackgroundPhase}
-          />
-        )}
-        {gameState === 'SUMMARY' && (
-          <SummaryScreen 
-            playerState={playerState} 
-            gameId={gameId}
-            onRestart={handleRestart} 
-          />
-        )}
-        {gameState === 'DASHBOARD' && (
-          <DashboardScreen 
-            currentPlayer={playerState} 
-            onBack={handleNavigateHome} 
-          />
-        )}
-        {gameState === 'STUDENT_PROFILE' && (
-           <StudentProfile 
-             player={playerState}
-             onBack={() => setGameState('MISSION_SELECT')}
-           />
-        )}
+      <main className="flex-grow flex flex-col items-center p-4 z-10 w-full overflow-y-auto">
+        <div className="w-full max-w-7xl mx-auto my-auto flex flex-col items-center justify-center">
+          {gameState === 'INTRO' && (
+            <IntroScreen onStart={handleStartIntro} />
+          )}
+          {gameState === 'MISSION_SELECT' && (
+            <MissionSelect onSelect={startNewSession} playerName={playerState.firstName} />
+          )}
+          {gameState === 'PLAYING' && (
+            <GameScreen 
+              initialPlayerState={playerState} 
+              gameId={gameId}
+              onFinish={handleGameFinish} 
+              setBackgroundPhase={setBackgroundPhase}
+            />
+          )}
+          {gameState === 'SUMMARY' && (
+            <SummaryScreen 
+              playerState={playerState} 
+              gameId={gameId}
+              onRestart={handleRestart} 
+            />
+          )}
+          {gameState === 'DASHBOARD' && (
+            <DashboardScreen 
+              currentPlayer={playerState} 
+              onBack={handleNavigateHome} 
+            />
+          )}
+          {gameState === 'STUDENT_PROFILE' && (
+            <StudentProfile 
+              player={playerState}
+              onBack={() => setGameState('MISSION_SELECT')}
+            />
+          )}
+        </div>
       </main>
     </div>
   );
