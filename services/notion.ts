@@ -1,5 +1,5 @@
 
-import { PlayerState, GameId, NotionStudent } from '../types';
+import { PlayerState, GameId, NotionStudent, NotionLog } from '../types';
 
 const isLocalhost = () => {
     return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -49,6 +49,21 @@ export const fetchNotionStudents = async (): Promise<{ success: boolean; data?: 
         return { success: true, data: result.data };
     } catch (e) {
         console.error("Failed to fetch from Notion:", e);
+        return { success: false, error: "Network Error" };
+    }
+};
+
+export const fetchStudentLogs = async (pageId: string): Promise<{ success: boolean; logs?: NotionLog[]; error?: string }> => {
+    try {
+        const response = await fetch(`/api/sync-notion?studentPageId=${pageId}`);
+        if (!response.ok) {
+            const err = await response.json();
+            return { success: false, error: err.details || 'Server Error' };
+        }
+        const result = await response.json();
+        return { success: true, logs: result.logs };
+    } catch (e) {
+        console.error("Failed to fetch logs from Notion:", e);
         return { success: false, error: "Network Error" };
     }
 };

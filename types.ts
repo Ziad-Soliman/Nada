@@ -62,6 +62,15 @@ export interface NotionStudent {
   character: CharacterConfig;
 }
 
+export interface NotionLog {
+  id: string;
+  game: string;
+  score: number;
+  maxScore: number;
+  rank: string;
+  date: string;
+}
+
 export interface StudentDatabase {
   [id: string]: PlayerState;
 }

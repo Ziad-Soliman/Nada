@@ -1,10 +1,10 @@
 
 import React, { useEffect, useState } from 'react';
-import { PlayerState, NotionStudent, ClassId } from '../types';
-import { ArrowLeft, Award, Users, Download, Search, Filter, Cloud, RefreshCw, Eye, X, Wifi, WifiOff, Globe, Trophy } from 'lucide-react';
+import { PlayerState, NotionStudent, ClassId, NotionLog } from '../types';
+import { ArrowLeft, Award, Users, Download, Search, Filter, Cloud, RefreshCw, Eye, X, Wifi, WifiOff, Globe, Trophy, Rocket, Trees, Gem, Anchor, Building2, Clock, Calendar } from 'lucide-react';
 import Button from './Button';
 import Avatar from './Avatar';
-import { fetchNotionStudents } from '../services/notion';
+import { fetchNotionStudents, fetchStudentLogs } from '../services/notion';
 
 interface DashboardScreenProps {
   currentPlayer: PlayerState;
@@ -20,11 +20,27 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onBack }) => {
   const [classFilter, setClassFilter] = useState<'ALL' | ClassId>('ALL');
   
   const [selectedStudent, setSelectedStudent] = useState<NotionStudent | null>(null);
+  const [studentLogs, setStudentLogs] = useState<NotionLog[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
 
   // Initial Load - Force Cloud Fetch
   useEffect(() => {
     refreshData();
   }, []);
+
+  // Fetch Logs when a student is selected
+  useEffect(() => {
+    if (selectedStudent) {
+        setStudentLogs([]);
+        setLoadingLogs(true);
+        fetchStudentLogs(selectedStudent.id).then(result => {
+            if (result.success && result.logs) {
+                setStudentLogs(result.logs);
+            }
+            setLoadingLogs(false);
+        });
+    }
+  }, [selectedStudent]);
 
   const refreshData = async () => {
     setIsLoading(true);
@@ -55,6 +71,17 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onBack }) => {
       } catch (e) {
           return "Unknown";
       }
+  };
+
+  const getGameIcon = (gameTitle: string) => {
+      const lower = gameTitle.toLowerCase();
+      if (lower.includes('space')) return Rocket;
+      if (lower.includes('dino')) return Trees;
+      if (lower.includes('cave') || lower.includes('crystal')) return Gem;
+      if (lower.includes('ocean')) return Anchor;
+      if (lower.includes('city') || lower.includes('sky')) return Building2;
+      if (lower.includes('time')) return Clock;
+      return Award;
   };
 
   // --- FILTERING LOGIC ---
@@ -109,66 +136,104 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onBack }) => {
       const character = selectedStudent.character || { suitColor: 'blue', helmetStyle: 'classic', badge: 'star' };
 
       return (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in p-4">
-              <div className="bg-slate-900 border border-white/10 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col relative animate-scale-in">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in p-4">
+              <div className="bg-slate-900 border border-white/10 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col relative animate-scale-in max-h-[90vh]">
                   
                   {/* Close Button */}
                   <button 
                       onClick={() => setSelectedStudent(null)} 
-                      className="absolute top-4 right-4 p-2 bg-slate-800/50 hover:bg-slate-700 rounded-full transition-colors z-10"
+                      className="absolute top-4 right-4 p-2 bg-slate-800/50 hover:bg-slate-700 rounded-full transition-colors z-20"
                   >
                       <X className="w-5 h-5 text-slate-300" />
                   </button>
 
                   {/* Header */}
-                  <div className="p-8 pb-4 flex flex-col items-center text-center relative overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-b from-blue-900/20 to-transparent pointer-events-none"></div>
+                  <div className="p-8 pb-4 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden bg-slate-950">
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-transparent pointer-events-none"></div>
                       
-                      <div className="w-32 h-32 rounded-full border-4 border-slate-700 bg-slate-800 shadow-xl flex items-center justify-center mb-4 overflow-hidden relative group">
+                      <div className="w-24 h-24 rounded-full border-4 border-slate-700 bg-slate-800 shadow-xl flex items-center justify-center overflow-hidden relative group shrink-0">
                           <div className="absolute inset-0 bg-white/5 group-hover:bg-white/10 transition-colors"></div>
-                          <Avatar config={character} size="xl" className="transform translate-y-2 scale-110" />
+                          <Avatar config={character} size="lg" className="transform translate-y-2 scale-110" />
                       </div>
                       
-                      <h3 className="text-2xl font-['Orbitron'] font-bold text-white tracking-wide">
-                          {selectedStudent.firstName} {selectedStudent.lastName}
-                      </h3>
-                      
-                      <div className="flex gap-2 mt-2">
-                          <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 border border-slate-600 text-slate-300">
-                             Class {selectedStudent.classId}
-                          </span>
-                          <span className="text-xs font-bold px-3 py-1 rounded-full bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 uppercase tracking-wide">
-                             {rank}
-                          </span>
+                      <div className="text-center md:text-left z-10">
+                        <h3 className="text-2xl font-['Orbitron'] font-bold text-white tracking-wide">
+                            {selectedStudent.firstName} {selectedStudent.lastName}
+                        </h3>
+                        <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-2">
+                            <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 border border-slate-600 text-slate-300">
+                                Class {selectedStudent.classId}
+                            </span>
+                            <span className="text-xs font-bold px-3 py-1 rounded-full bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 uppercase tracking-wide">
+                                {rank}
+                            </span>
+                        </div>
+                      </div>
+
+                       <div className="ml-auto flex gap-4 text-center">
+                          <div>
+                              <p className="text-[10px] text-slate-500 font-bold uppercase">Total XP</p>
+                              <p className="text-2xl font-['Orbitron'] font-bold text-white">{selectedStudent.totalScore}</p>
+                          </div>
                       </div>
                   </div>
 
-                  {/* Stats Grid */}
-                  <div className="p-6 space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                          <div className="bg-slate-950/50 p-5 rounded-2xl border border-white/5 text-center hover:border-blue-500/30 transition-colors group">
-                              <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-2 group-hover:text-blue-400">Total XP</p>
-                              <p className="text-3xl font-bold text-white font-['Orbitron'] group-hover:scale-105 transition-transform">{selectedStudent.totalScore}</p>
+                  {/* LOGS SECTION */}
+                  <div className="flex-1 overflow-y-auto bg-slate-50/5 p-6">
+                      <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                          <Globe className="w-4 h-4" /> Cloud Mission Logs
+                      </h4>
+                      
+                      {loadingLogs ? (
+                          <div className="flex flex-col items-center justify-center py-10 space-y-3 opacity-70">
+                              <RefreshCw className="w-8 h-8 text-blue-400 animate-spin" />
+                              <p className="text-sm text-slate-300">Retrieving secure logs...</p>
                           </div>
-                          <div className="bg-slate-950/50 p-5 rounded-2xl border border-white/5 text-center hover:border-green-500/30 transition-colors group">
-                              <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-2 group-hover:text-green-400">Last Active</p>
-                              <div className="flex flex-col items-center justify-center h-10">
-                                <p className="text-xs font-bold text-white">{new Date(selectedStudent.lastPlayed).toLocaleDateString()}</p>
-                                <p className="text-[10px] text-slate-400">{new Date(selectedStudent.lastPlayed).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
-                              </div>
+                      ) : studentLogs.length === 0 ? (
+                          <div className="text-center py-10 border-2 border-dashed border-white/5 rounded-2xl">
+                              <p className="text-slate-500 text-sm">No mission history found for this cadet.</p>
                           </div>
-                      </div>
-
-                      <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-start gap-3">
-                          <Globe className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
-                          <p className="text-sm text-blue-200">
-                              This profile is synced from the Cloud Database. Detailed per-game statistics and history logs are stored securely on the student's device.
-                          </p>
-                      </div>
+                      ) : (
+                          <div className="space-y-3">
+                              {studentLogs.map((log) => {
+                                  const Icon = getGameIcon(log.game);
+                                  return (
+                                    <div key={log.id} className="bg-slate-800/50 p-4 rounded-xl border border-white/5 flex items-center justify-between group hover:bg-slate-800 transition-colors">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-lg bg-slate-900 border border-white/10 flex items-center justify-center text-slate-400 group-hover:text-blue-400 transition-colors">
+                                                <Icon className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-white">{log.game}</p>
+                                                <div className="flex items-center gap-2 text-xs text-slate-500">
+                                                    <Calendar className="w-3 h-3" />
+                                                    {new Date(log.date).toLocaleDateString()}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="text-right">
+                                            <p className="text-sm font-bold font-['Orbitron'] text-white">
+                                                {log.score} <span className="text-slate-500 text-[10px]">/ {log.maxScore}</span>
+                                            </p>
+                                            <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border ${
+                                                log.rank === 'Galactic Legend' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' :
+                                                log.rank === 'Mission Commander' ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' :
+                                                log.rank === 'Star Pilot' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
+                                                'bg-slate-700 text-slate-400 border-slate-600'
+                                            }`}>
+                                                {log.rank}
+                                            </span>
+                                        </div>
+                                    </div>
+                                  );
+                              })}
+                          </div>
+                      )}
                   </div>
 
                   {/* Footer */}
-                  <div className="p-4 bg-slate-950/80 border-t border-white/10">
+                  <div className="p-4 bg-slate-950/80 border-t border-white/10 shrink-0">
                       <Button onClick={() => setSelectedStudent(null)} variant="secondary" className="w-full">
                           Close Profile
                       </Button>

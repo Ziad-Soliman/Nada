@@ -38,9 +38,44 @@ export default async function handler(req, res) {
 
   const notion = new Client({ auth: NOTION_API_KEY });
 
-  // === HANDLE GET: FETCH STUDENTS ===
+  // === HANDLE GET: FETCH STUDENTS OR LOGS ===
   if (req.method === 'GET') {
       try {
+          const { studentPageId } = req.query;
+
+          // --- FETCH LOGS FOR SPECIFIC STUDENT ---
+          if (studentPageId) {
+             if (!LOGS_DB_ID) return res.status(500).json({ error: 'Logs DB not configured' });
+
+             const response = await notion.databases.query({
+                 database_id: LOGS_DB_ID,
+                 filter: {
+                     property: 'Student',
+                     relation: {
+                         contains: studentPageId
+                     }
+                 },
+                 sorts: [
+                     { timestamp: 'created_time', direction: 'descending' }
+                 ]
+             });
+
+             const logs = response.results.map(page => {
+                 const props = page.properties;
+                 return {
+                     id: page.id,
+                     game: getPropValue(props['Game Mode']) || 'Unknown Mission',
+                     score: getPropValue(props['Score']) || 0,
+                     maxScore: getPropValue(props['Max Score']) || 100,
+                     rank: getPropValue(props['Outcome']) || '-',
+                     date: page.created_time
+                 };
+             });
+
+             return res.status(200).json({ success: true, logs });
+          }
+
+          // --- FETCH ALL STUDENTS ---
           const response = await notion.databases.query({
               database_id: STUDENT_DB_ID,
               sorts: [
