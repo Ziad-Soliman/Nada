@@ -213,7 +213,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, gameId, onF
             </div>
             <div>
                 <div className={`text-xs ${theme.accent} font-mono uppercase tracking-widest mb-1`}>Agent</div>
-                <div className="text-lg font-bold font-['Orbitron'] text-white">{player.name}</div>
+                <div className="text-lg font-bold font-['Orbitron'] text-white">{player.firstName}</div>
             </div>
          </div>
 
