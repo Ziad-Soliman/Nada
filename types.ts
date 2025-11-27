@@ -51,6 +51,16 @@ export interface PlayerState {
   lastPlayed: string; // ISO Date string
 }
 
+export interface NotionStudent {
+  id: string; // Notion Page ID
+  firstName: string;
+  lastName: string;
+  classId: string;
+  totalScore: number;
+  lastPlayed: string;
+  rank: string;
+}
+
 export interface StudentDatabase {
   [id: string]: PlayerState;
 }
