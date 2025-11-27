@@ -193,7 +193,7 @@ export default async function handler(req, res) {
             notionPageId = existingStudent.id;
 
             try {
-                // Try updating "Current Rank" first, fallback if it fails or schema differs
+                // Update "Current Rank" as rich_text (Text)
                 const updateProps = { 
                     ...avatarProps,
                     'Last Played': { date: { start: new Date().toISOString() } }
@@ -201,20 +201,16 @@ export default async function handler(req, res) {
                 
                 if (scoreToAdd > 0) {
                     updateProps['Total XP'] = { number: newTotalXP };
-                    
-                    // Attempt to write to "Current Rank" column
-                    // If your DB uses "Rank", you might want to change this key
-                    updateProps['Current Rank'] = { select: { name: newOverallRank } };
+                    updateProps['Current Rank'] = { rich_text: [{ text: { content: newOverallRank } }] };
                 } else {
-                    // Even if just syncing profile (no score), ensure Rank is consistent
-                    updateProps['Current Rank'] = { select: { name: newOverallRank } };
+                    updateProps['Current Rank'] = { rich_text: [{ text: { content: newOverallRank } }] };
                 }
 
                 await notion.pages.update({ page_id: notionPageId, properties: updateProps });
             } catch (updateError) {
-                console.warn("Update Warning (Checking schema mismatch?):", updateError.message);
+                console.warn("Update Warning:", updateError.message);
                 
-                // Fallback: If 'Current Rank' failed, maybe column is named 'Rank'
+                // Fallback attempt for legacy column name 'Rank'
                 if (updateError.message.includes('Current Rank')) {
                      try {
                         const fallbackProps = {
@@ -232,7 +228,8 @@ export default async function handler(req, res) {
                 'Class': { select: { name: String(student.classId) } },
                 'Total XP': { number: scoreToAdd },
                 'Last Played': { date: { start: new Date().toISOString() } },
-                'Current Rank': { select: { name: newOverallRank } },
+                // FIX: 'Current Rank' is rich_text based on error logs
+                'Current Rank': { rich_text: [{ text: { content: newOverallRank } }] },
                 ...avatarProps
             };
 
@@ -242,16 +239,9 @@ export default async function handler(req, res) {
                     properties: { ...studentProps, 'Student ID': { title: [{ text: { content: studentUniqueId } }] } },
                 });
                 notionPageId = newPage.id;
-            } catch (e) {
-                 try {
-                    const newPage = await notion.pages.create({
-                        parent: { database_id: STUDENT_DB_ID },
-                        properties: { ...studentProps, 'Name': { title: [{ text: { content: studentUniqueId } }] } },
-                    });
-                    notionPageId = newPage.id;
-                 } catch (createError) {
-                     return res.status(400).json({ error: 'Create Student Failed', details: createError.message });
-                 }
+            } catch (createError) {
+                // Return exact error to help debugging
+                return res.status(400).json({ error: 'Create Student Failed', details: createError.message });
             }
         }
 
