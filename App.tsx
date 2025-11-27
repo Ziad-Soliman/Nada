@@ -11,7 +11,7 @@ import MissionSelect from './components/MissionSelect';
 import Avatar from './components/Avatar';
 import { saveStudentProgress } from './services/storage';
 import { syncScoreToNotion, syncProfileToNotion } from './services/notion';
-import { Menu, X, Home, Gamepad2, Lock, User, Clock } from 'lucide-react';
+import { Menu, X, Home, Gamepad2, Lock, User, Clock, Coins, FlaskConical, Compass } from 'lucide-react';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>('INTRO');
@@ -343,6 +343,30 @@ const App: React.FC = () => {
                 <div>
                   <span className="font-bold block">Time Warp</span>
                   <span className="text-[10px] text-amber-400 uppercase tracking-wider">Time & Calendar</span>
+                </div>
+              </button>
+
+              <button onClick={() => startNewSession('market')} className="w-full flex items-center gap-3 px-4 py-3 bg-yellow-900/20 hover:bg-yellow-900/40 border border-yellow-500/20 hover:border-yellow-500/50 text-yellow-100 rounded-xl transition-all text-left">
+                <Coins className="w-5 h-5 text-yellow-400" />
+                <div>
+                  <span className="font-bold block">Magic Market</span>
+                  <span className="text-[10px] text-yellow-400 uppercase tracking-wider">Money & Change</span>
+                </div>
+              </button>
+
+              <button onClick={() => startNewSession('lab')} className="w-full flex items-center gap-3 px-4 py-3 bg-pink-900/20 hover:bg-pink-900/40 border border-pink-500/20 hover:border-pink-500/50 text-pink-100 rounded-xl transition-all text-left">
+                <FlaskConical className="w-5 h-5 text-pink-400" />
+                <div>
+                  <span className="font-bold block">Alchemy Lab</span>
+                  <span className="text-[10px] text-pink-400 uppercase tracking-wider">Mass & Capacity</span>
+                </div>
+              </button>
+
+              <button onClick={() => startNewSession('safari')} className="w-full flex items-center gap-3 px-4 py-3 bg-lime-900/20 hover:bg-lime-900/40 border border-lime-500/20 hover:border-lime-500/50 text-lime-100 rounded-xl transition-all text-left">
+                <Compass className="w-5 h-5 text-lime-400" />
+                <div>
+                  <span className="font-bold block">Safari Scout</span>
+                  <span className="text-[10px] text-lime-400 uppercase tracking-wider">Data & Direction</span>
                 </div>
               </button>
             </div>
