@@ -420,7 +420,7 @@ const App: React.FC = () => {
                   placeholder="Password"
                   autoFocus
                 />
-                {loginError && <p className="text-red-400 text-xs mt-2 flex items-center gap-1"><X className="w-3 h-3"/> Incorrect password. Try 'majesty'.</p>}
+                {loginError && <p className="text-red-400 text-xs mt-2 flex items-center gap-1"><X className="w-3 h-3"/> Incorrect password.</p>}
               </div>
               <button 
                 type="submit"
