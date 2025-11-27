@@ -248,7 +248,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto h-[85vh] flex flex-col bg-[#f8fafc] rounded-3xl shadow-[0_0_60px_rgba(0,0,0,0.5)] border border-white/10 overflow-hidden animate-fade-in relative">
+    <div className="w-full max-w-7xl mx-auto min-h-[85vh] flex flex-col bg-[#f8fafc] rounded-3xl shadow-[0_0_60px_rgba(0,0,0,0.5)] border border-white/10 overflow-hidden animate-fade-in relative">
       
       {/* HEADER */}
       <div className="bg-slate-900 p-6 flex flex-col md:flex-row justify-between items-center border-b-4 border-blue-500 relative shrink-0">
@@ -339,7 +339,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onBack }) => {
       )}
 
       {/* DASHBOARD CONTENT AREA */}
-      <div className="flex-1 overflow-y-auto bg-slate-50/50 p-6 md:p-8 scroll-smooth">
+      <div className="flex-1 bg-slate-50/50 p-6 md:p-8">
         
         {/* LEADERBOARD PODIUM - Shows only if we have students and no specific search filtering active (class filter ok) */}
         {!isLoading && !error && filteredList.length > 0 && !filterText && (
