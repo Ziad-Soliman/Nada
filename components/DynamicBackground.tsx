@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { GameId } from '../types';
 
 interface DynamicBackgroundProps {
@@ -8,156 +8,118 @@ interface DynamicBackgroundProps {
 }
 
 const DynamicBackground: React.FC<DynamicBackgroundProps> = ({ phase, gameId }) => {
-  const [particles, setParticles] = useState<{ id: number; left: number; top: number; size: number; delay: number }[]>([]);
-
-  useEffect(() => {
-    const count = 40;
-    const newParticles = Array.from({ length: count }).map((_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      size: Math.random() * 3 + 1,
-      delay: Math.random() * 5,
-    }));
-    setParticles(newParticles);
-  }, [gameId]);
-
-  // Visual Configurations based on Game ID
-  const configs = {
+  
+  // Apple-style Mesh Gradient Configuration
+  // Each theme defines a base background and 3 floating "orb" colors
+  const themes: Record<GameId, { bg: string; orbs: [string, string, string] }> = {
     space: {
-        bg: 'bg-slate-950',
-        particleColor: 'bg-white',
-        particleShape: 'rounded-full', // Stars
-        image: "url('https://images.unsplash.com/photo-1614730373829-aa548a6e4128?q=80&w=2187&auto=format&fit=crop')", // Earth
-        overlayGradient: 'from-cyan-500/20 to-transparent',
-        nebulaColors: ['bg-purple-900/40', 'bg-pink-900/30', 'bg-indigo-900/30'],
-        texture: "url('https://www.transparenttextures.com/patterns/stardust.png')"
+      bg: 'bg-[#0B0F19]', // Deepest Midnight
+      orbs: ['bg-cyan-500', 'bg-purple-600', 'bg-blue-600']
     },
     dino: {
-        bg: 'bg-green-950',
-        particleColor: 'bg-yellow-200/50', // Fireflies
-        particleShape: 'rounded-full',
-        image: "url('https://images.unsplash.com/photo-1598335624129-974a961cb7e4?q=80&w=2574&auto=format&fit=crop')", // Jungle/Ferns
-        overlayGradient: 'from-green-500/20 to-transparent',
-        nebulaColors: ['bg-green-900/40', 'bg-yellow-900/30', 'bg-emerald-900/30'],
-        texture: "url('https://www.transparenttextures.com/patterns/wood-pattern.png')"
+      bg: 'bg-[#051C12]', // Deep Forest
+      orbs: ['bg-emerald-500', 'bg-lime-500', 'bg-green-600']
     },
     cave: {
-        bg: 'bg-slate-900',
-        particleColor: 'bg-purple-300/60', // Floating Spores/Dust
-        particleShape: 'rounded-sm', 
-        image: "url('https://images.unsplash.com/photo-1516934024742-b461fba47600?q=80&w=2574&auto=format&fit=crop')", // Cave/Crystals
-        overlayGradient: 'from-purple-500/20 to-transparent',
-        nebulaColors: ['bg-purple-900/50', 'bg-fuchsia-900/40', 'bg-violet-900/30'],
-        texture: "url('https://www.transparenttextures.com/patterns/cubes.png')"
+      bg: 'bg-[#150523]', // Deep Violet
+      orbs: ['bg-fuchsia-600', 'bg-violet-600', 'bg-purple-500']
     },
     ocean: {
-        bg: 'bg-cyan-950',
-        particleColor: 'bg-teal-200/40', // Bubbles
-        particleShape: 'rounded-full', 
-        image: "url('https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?q=80&w=2670&auto=format&fit=crop')", // Underwater
-        overlayGradient: 'from-cyan-600/30 to-transparent',
-        nebulaColors: ['bg-cyan-900/50', 'bg-teal-900/40', 'bg-blue-900/30'],
-        texture: "url('https://www.transparenttextures.com/patterns/diagmonds-light.png')"
+      bg: 'bg-[#061824]', // Deep Navy
+      orbs: ['bg-teal-500', 'bg-cyan-600', 'bg-sky-600']
     },
     city: {
-        bg: 'bg-slate-900',
-        particleColor: 'bg-sky-200/60', // Clouds/Drones
-        particleShape: 'rounded-sm', 
-        image: "url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=2444&auto=format&fit=crop')", // City Skyline
-        overlayGradient: 'from-sky-500/20 to-transparent',
-        nebulaColors: ['bg-sky-900/40', 'bg-blue-900/30', 'bg-indigo-900/30'],
-        texture: "url('https://www.transparenttextures.com/patterns/carbon-fibre.png')"
+      bg: 'bg-[#0F172A]', // Slate
+      orbs: ['bg-sky-500', 'bg-indigo-500', 'bg-blue-400']
     },
     time: {
-        bg: 'bg-amber-950',
-        particleColor: 'bg-orange-200/50', 
-        particleShape: 'rounded-full', 
-        image: "url('https://images.unsplash.com/photo-1508962914676-134849a727f0?q=80&w=2669&auto=format&fit=crop')", // Clock/Gears
-        overlayGradient: 'from-amber-500/20 to-transparent',
-        nebulaColors: ['bg-amber-900/50', 'bg-orange-900/40', 'bg-yellow-900/30'],
-        texture: "url('https://www.transparenttextures.com/patterns/gears.png')"
+      bg: 'bg-[#1F1005]', // Dark Amber
+      orbs: ['bg-amber-500', 'bg-orange-600', 'bg-yellow-600']
     },
     market: {
-        bg: 'bg-yellow-950',
-        particleColor: 'bg-yellow-200/50', // Sparkles
-        particleShape: 'rounded-full',
-        image: "url('https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=2670&auto=format&fit=crop')", // Market/Shop
-        overlayGradient: 'from-yellow-600/30 to-transparent',
-        nebulaColors: ['bg-yellow-900/50', 'bg-orange-900/40', 'bg-red-900/30'],
-        texture: "url('https://www.transparenttextures.com/patterns/arabesque.png')"
+      bg: 'bg-[#211604]', // Rich Brown
+      orbs: ['bg-yellow-500', 'bg-amber-500', 'bg-orange-500']
     },
     lab: {
-        bg: 'bg-pink-950',
-        particleColor: 'bg-rose-200/60', // Bubbles
-        particleShape: 'rounded-full',
-        image: "url('https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=2670&auto=format&fit=crop')", // Lab
-        overlayGradient: 'from-pink-600/30 to-transparent',
-        nebulaColors: ['bg-pink-900/50', 'bg-rose-900/40', 'bg-fuchsia-900/30'],
-        texture: "url('https://www.transparenttextures.com/patterns/hexellence.png')"
+      bg: 'bg-[#1F0510]', // Deep Berry
+      orbs: ['bg-pink-600', 'bg-rose-500', 'bg-red-500']
     },
     safari: {
-        bg: 'bg-lime-950',
-        particleColor: 'bg-green-200/50',
-        particleShape: 'rounded-sm',
-        image: "url('https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=2668&auto=format&fit=crop')", // Safari
-        overlayGradient: 'from-lime-600/30 to-transparent',
-        nebulaColors: ['bg-lime-900/50', 'bg-green-900/40', 'bg-emerald-900/30'],
-        texture: "url('https://www.transparenttextures.com/patterns/food.png')"
+      bg: 'bg-[#141C06]', // Dark Olive
+      orbs: ['bg-lime-500', 'bg-green-500', 'bg-yellow-500']
     }
   };
 
-  const current = configs[gameId];
+  const current = themes[gameId] || themes.space;
 
   return (
-    <div className={`fixed inset-0 pointer-events-none z-0 overflow-hidden ${current.bg} transition-colors duration-1000`}>
+    <div className={`fixed inset-0 pointer-events-none z-0 overflow-hidden transition-colors duration-1000 ease-in-out ${current.bg}`}>
       
-      {/* Particle Layer (Stars/Fireflies/Spores) */}
-      {particles.map((p) => (
-        <div
-          key={p.id}
-          className={`absolute ${current.particleColor} ${current.particleShape}`}
-          style={{
-            left: `${p.left}%`,
-            top: `${p.top}%`,
-            width: `${p.size}px`,
-            height: `${p.size}px`,
-            animation: `twinkle ${3 + p.delay}s infinite ease-in-out`,
-            opacity: Math.random() * 0.7 + 0.3,
-          }}
-        />
-      ))}
+      {/* CSS for fluid animations */}
+      <style>{`
+        @keyframes float-1 {
+          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+          33% { transform: translate(30px, -50px) scale(1.1); opacity: 0.6; }
+          66% { transform: translate(-20px, 20px) scale(0.9); opacity: 0.4; }
+        }
+        @keyframes float-2 {
+          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+          33% { transform: translate(-30px, 50px) scale(1.2); opacity: 0.5; }
+          66% { transform: translate(20px, -20px) scale(0.8); opacity: 0.3; }
+        }
+        @keyframes float-3 {
+          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+          50% { transform: translate(50px, 50px) scale(1.3); opacity: 0.5; }
+        }
+        @keyframes drift {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        .orb {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(80px); /* The "Apple" soft blur effect */
+          mix-blend-mode: screen; /* Makes colors vibrant when overlapping */
+          transition: all 2s ease-in-out;
+        }
+      `}</style>
 
-      {/* Primary Image Phase - Questions 1-5 */}
+      {/* Orb 1: Top Left - Main Accent */}
       <div 
-        className={`absolute inset-0 transition-opacity duration-2000 ease-in-out ${phase === 'start' ? 'opacity-100' : 'opacity-0'}`} 
-      >
-         {/* Hero Image Background */}
-         <div 
-            className="absolute bottom-[-50vh] left-1/2 -translate-x-1/2 w-[150vw] h-[150vw] rounded-full bg-no-repeat bg-cover shadow-[0_0_100px_rgba(0,0,0,0.5)]"
-            style={{ 
-                backgroundImage: current.image,
-                backgroundPosition: 'center',
-                filter: 'brightness(0.7) contrast(1.2) blur(4px)',
-                opacity: 0.8
-            }}
-         >
-            <div className="absolute inset-0 rounded-full shadow-[inset_0_100px_150px_rgba(0,0,0,0.9)]"></div>
-         </div>
+        className={`orb w-[60vw] h-[60vw] md:w-[40vw] md:h-[40vw] top-[-10%] left-[-10%] ${current.orbs[0]}`}
+        style={{ 
+          animation: 'float-1 20s infinite ease-in-out',
+          transform: phase === 'end' ? 'scale(1.2) translate(10%, 10%)' : 'scale(1)'
+        }}
+      />
 
-         {/* Atmosphere Glow */}
-         <div className={`absolute bottom-0 left-0 right-0 h-[60vh] bg-gradient-to-t ${current.overlayGradient} blur-[100px]`}></div>
+      {/* Orb 2: Bottom Right - Secondary Accent */}
+      <div 
+        className={`orb w-[70vw] h-[70vw] md:w-[50vw] md:h-[50vw] bottom-[-20%] right-[-20%] ${current.orbs[1]}`}
+        style={{ 
+          animation: 'float-2 25s infinite ease-in-out reverse',
+          transform: phase === 'end' ? 'scale(1.2) translate(-10%, -10%)' : 'scale(1)'
+        }}
+      />
+
+      {/* Orb 3: Center/Moving - Highlight */}
+      <div 
+        className={`orb w-[50vw] h-[50vw] md:w-[30vw] md:h-[30vw] top-[30%] left-[20%] ${current.orbs[2]}`}
+        style={{ 
+          animation: 'float-3 18s infinite ease-in-out',
+          opacity: phase === 'end' ? 0.6 : 0.3
+        }}
+      />
+
+      {/* Subtle Micro-Particles (Bokeh) for Depth */}
+      <div className="absolute inset-0 opacity-20">
+         <div className={`absolute top-[20%] right-[30%] w-4 h-4 rounded-full ${current.orbs[0]} blur-sm animate-pulse`} style={{ animationDuration: '4s' }}></div>
+         <div className={`absolute top-[60%] left-[10%] w-6 h-6 rounded-full ${current.orbs[1]} blur-sm animate-pulse`} style={{ animationDuration: '7s' }}></div>
+         <div className={`absolute bottom-[15%] right-[15%] w-3 h-3 rounded-full ${current.orbs[2]} blur-sm animate-pulse`} style={{ animationDuration: '5s' }}></div>
       </div>
 
-      {/* Secondary Abstract Phase - Questions 6-10 */}
-      <div className={`absolute inset-0 transition-opacity duration-2000 ease-in-out ${phase === 'end' ? 'opacity-100' : 'opacity-0'}`}>
-        <div className={`absolute top-[-10%] right-[-10%] w-[70vw] h-[70vw] ${current.nebulaColors[0]} rounded-full blur-[100px] animate-pulse`}></div>
-        <div className={`absolute bottom-[-10%] left-[-10%] w-[60vw] h-[60vw] ${current.nebulaColors[1]} rounded-full blur-[100px]`}></div>
-        <div className={`absolute top-[40%] left-[40%] w-[40vw] h-[40vw] ${current.nebulaColors[2]} rounded-full blur-[80px]`}></div>
-      </div>
-
-      {/* Texture Overlay */}
-      <div className={`absolute inset-0 opacity-10`} style={{ backgroundImage: current.texture }}></div>
+      {/* Vignette Overlay to focus attention on center UI */}
+      <div className="absolute inset-0 bg-radial-gradient from-transparent via-transparent to-black/40 pointer-events-none"></div>
     </div>
   );
 };
