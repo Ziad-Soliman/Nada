@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { GameId } from '../types';
-import { Rocket, Trees, Gem, ArrowRight, Lock, Anchor, Building2, Clock } from 'lucide-react';
+import { Rocket, Trees, Gem, ArrowRight, Lock, Anchor, Building2, Clock, Coins, FlaskConical, Binoculars } from 'lucide-react';
 
 interface MissionSelectProps {
   onSelect: (gameId: GameId) => void;
@@ -70,11 +70,41 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
       shadow: 'shadow-amber-500/40',
       description: "Temporal Anomaly Detected! Repair the timeline by reading analogue clocks, calculating time durations, and using calendar facts.",
       difficulty: 'Normal'
+    },
+    {
+      id: 'market' as GameId,
+      title: 'Magic Market',
+      subtitle: 'Money & Change',
+      icon: Coins,
+      color: 'from-yellow-400 to-amber-600',
+      shadow: 'shadow-yellow-500/40',
+      description: "Step into the Bazaar! Buy potions and shields by adding coin amounts and calculating the correct change for the merchants.",
+      difficulty: 'Easy'
+    },
+    {
+      id: 'lab' as GameId,
+      title: 'Alchemy Lab',
+      subtitle: 'Mass & Capacity',
+      icon: FlaskConical,
+      color: 'from-pink-500 to-rose-600',
+      shadow: 'shadow-pink-500/40',
+      description: "Brew the Elixir! Measure ingredients precisely by converting grams to kilograms, measuring liquids in ml, and comparing lengths.",
+      difficulty: 'Hard'
+    },
+    {
+      id: 'safari' as GameId,
+      title: 'Safari Scout',
+      subtitle: 'Data & Direction',
+      icon: Binoculars,
+      color: 'from-lime-500 to-green-700',
+      shadow: 'shadow-lime-500/40',
+      description: "On Patrol! Analyze animal population charts to answer data questions and navigate the jungle using compass directions.",
+      difficulty: 'Normal'
     }
   ];
 
   return (
-    <div className="w-full max-w-5xl p-6 animate-fade-in pb-20">
+    <div className="w-full max-w-6xl p-6 animate-fade-in pb-20">
        <div className="text-center mb-8">
           <h2 className="text-3xl font-['Orbitron'] font-bold text-white mb-2">Welcome, {playerName}</h2>
           <p className="text-slate-400">Select your mission to begin training.</p>
@@ -117,8 +147,8 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
           {/* Locked Content Teaser */}
           <div className="relative bg-slate-950/40 border border-dashed border-slate-700/50 rounded-3xl p-6 flex flex-col items-center justify-center text-center opacity-70 min-h-[250px]">
               <Lock className="w-8 h-8 text-slate-600 mb-2" />
-              <p className="text-slate-500 font-bold">Mystery Mission</p>
-              <p className="text-xs text-slate-600">Coming Term 3</p>
+              <p className="text-slate-500 font-bold">Secret Level</p>
+              <p className="text-xs text-slate-600">Coming Soon</p>
           </div>
        </div>
     </div>

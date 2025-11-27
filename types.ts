@@ -2,7 +2,7 @@
 export interface MathProblem {
   num1: number;
   num2: number;
-  operation: 'add' | 'sub' | 'mul' | 'div' | 'val' | 'round' | 'frac' | 'geo' | 'time';
+  operation: 'add' | 'sub' | 'mul' | 'div' | 'val' | 'round' | 'frac' | 'geo' | 'time' | 'money' | 'measure' | 'data';
   answer: number | string;
   questionText?: string;
   isWordProblem: boolean;
@@ -11,7 +11,7 @@ export interface MathProblem {
 
 export type GameState = 'INTRO' | 'MISSION_SELECT' | 'PLAYING' | 'SUMMARY' | 'DASHBOARD' | 'STUDENT_PROFILE';
 
-export type GameId = 'space' | 'dino' | 'cave' | 'ocean' | 'city' | 'time';
+export type GameId = 'space' | 'dino' | 'cave' | 'ocean' | 'city' | 'time' | 'market' | 'lab' | 'safari';
 
 export type ClassId = '3A' | '3B' | '3C';
 

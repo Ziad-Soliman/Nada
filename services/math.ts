@@ -108,31 +108,20 @@ function shuffleArray<T>(array: T[]): T[] {
 // --- GENERATORS ---
 
 // Helper: Generates 2 numbers for strict No-Regrouping Add/Sub
-// Returns [num1, num2]
 function getNoRegroupPair(isAdd: boolean): [number, number] {
     if (isAdd) {
-        // Addition: n1 + n2
-        // Tens: t1 + t2 <= 9
-        const t1 = getRandomInt(1, 8); // 10-80
+        const t1 = getRandomInt(1, 8); 
         const t2 = getRandomInt(1, 9 - t1); 
-        
-        // Ones: o1 + o2 <= 9
         const o1 = getRandomInt(0, 9);
         const o2 = getRandomInt(0, 9 - o1);
-        
         const n1 = t1 * 10 + o1;
         const n2 = t2 * 10 + o2;
         return [n1, n2];
     } else {
-        // Subtraction: n1 - n2
-        // Tens: t1 >= t2 (implicit if n1 > n2 generally, but for simple column subtraction logic)
-        const t1 = getRandomInt(2, 9); // 20-99
-        const t2 = getRandomInt(1, t1 - 1); // Ensure n2 is smaller and usually 2-digits (10+)
-        
-        // Ones: o1 >= o2 (No borrowing)
+        const t1 = getRandomInt(2, 9);
+        const t2 = getRandomInt(1, t1 - 1);
         const o1 = getRandomInt(0, 9);
         const o2 = getRandomInt(0, o1);
-        
         const n1 = t1 * 10 + o1;
         const n2 = t2 * 10 + o2;
         return [n1, n2];
@@ -143,82 +132,54 @@ function generateSpaceBatch(): MathProblem[] {
   const directBatch: MathProblem[] = [];
   const wordBatch: MathProblem[] = [];
   
-  // Part 1: 5 Direct Questions (Questions 1-5)
-  // Strictly 2-digit, No Regrouping
   for (let i = 0; i < 5; i++) {
     const isAdd = Math.random() > 0.5;
     const [n1, n2] = getNoRegroupPair(isAdd);
-    
     directBatch.push({
-      num1: n1,
-      num2: n2,
-      operation: isAdd ? 'add' : 'sub',
-      answer: isAdd ? n1 + n2 : n1 - n2,
-      isWordProblem: false
+      num1: n1, num2: n2, operation: isAdd ? 'add' : 'sub', answer: isAdd ? n1 + n2 : n1 - n2, isWordProblem: false
     });
   }
 
-  // Part 2: 5 Word Problems (Questions 6-10)
   for (let i = 0; i < 5; i++) {
     const isAdd = Math.random() > 0.5;
     const [n1, n2] = getNoRegroupPair(isAdd);
     const name = getRandomItem(NAMES);
     let text = "";
-
     if (isAdd) {
-        text = getRandomItem(ADDITION_TEMPLATES)
-            .replace('{name}', name)
-            .replace('{n1}', n1.toString())
-            .replace('{n2}', n2.toString());
+        text = getRandomItem(ADDITION_TEMPLATES).replace('{name}', name).replace('{n1}', n1.toString()).replace('{n2}', n2.toString());
     } else {
-        text = getRandomItem(SUBTRACTION_TEMPLATES)
-            .replace('{name}', name)
-            .replace('{n1}', n1.toString())
-            .replace('{n2}', n2.toString());
+        text = getRandomItem(SUBTRACTION_TEMPLATES).replace('{name}', name).replace('{n1}', n1.toString()).replace('{n2}', n2.toString());
     }
-
     wordBatch.push({
-      num1: n1,
-      num2: n2,
-      operation: isAdd ? 'add' : 'sub',
-      answer: isAdd ? n1 + n2 : n1 - n2,
-      isWordProblem: true,
-      questionText: text
+      num1: n1, num2: n2, operation: isAdd ? 'add' : 'sub', answer: isAdd ? n1 + n2 : n1 - n2, isWordProblem: true, questionText: text
     });
   }
   
-  // Extra questions (Just in case game goes longer)
   const extraBatch: MathProblem[] = [];
   for(let i=0; i<5; i++) {
      const isAdd = Math.random() > 0.5;
      const [n1, n2] = getNoRegroupPair(isAdd);
      extraBatch.push({
-        num1: n1, num2: n2, 
-        operation: isAdd ? 'add' : 'sub', 
-        answer: isAdd ? n1+n2 : n1-n2, 
-        isWordProblem: Math.random() > 0.5 
+        num1: n1, num2: n2, operation: isAdd ? 'add' : 'sub', answer: isAdd ? n1+n2 : n1-n2, isWordProblem: Math.random() > 0.5 
      });
   }
-
-  // Return strictly ordered: Direct first, then Word.
   return [...directBatch, ...wordBatch, ...extraBatch];
 }
 
 function generateDinoBatch(): MathProblem[] {
     const batch: MathProblem[] = [];
-    const tables = [3, 4, 8]; // Key Year 3
-    const reviewTables = [2, 5, 10]; // Review
+    const tables = [3, 4, 8]; 
+    const reviewTables = [2, 5, 10]; 
     const count = 15;
 
     for (let i = 0; i < count; i++) {
         const type = getRandomInt(1, 3);
-        const isMul = Math.random() > 0.4; // 60% Mul, 40% Div
+        const isMul = Math.random() > 0.4;
         const name = getRandomItem(NAMES);
-        const table = getRandomItem(Math.random() > 0.3 ? tables : reviewTables); // Bias towards new tables
+        const table = getRandomItem(Math.random() > 0.3 ? tables : reviewTables); 
         const factor = getRandomInt(2, 12);
 
         if (type === 1) {
-            // Direct Calc
             if (isMul) {
                 batch.push({ num1: table, num2: factor, operation: 'mul', answer: table * factor, isWordProblem: false });
             } else {
@@ -226,102 +187,61 @@ function generateDinoBatch(): MathProblem[] {
                 batch.push({ num1: product, num2: table, operation: 'div', answer: factor, isWordProblem: false });
             }
         } else if (type === 2) {
-            // Word Problems
             if (isMul) {
-                const text = getRandomItem(MULTIPLICATION_TEMPLATES)
-                    .replace('{name}', name).replace('{n1}', table.toString()).replace('{n2}', factor.toString());
+                const text = getRandomItem(MULTIPLICATION_TEMPLATES).replace('{name}', name).replace('{n1}', table.toString()).replace('{n2}', factor.toString());
                 batch.push({ num1: table, num2: factor, operation: 'mul', answer: table * factor, isWordProblem: true, questionText: text });
             } else {
                  const product = table * factor;
-                 const text = getRandomItem(DIVISION_TEMPLATES)
-                    .replace('{name}', name).replace('{n1}', product.toString()).replace('{n2}', table.toString());
+                 const text = getRandomItem(DIVISION_TEMPLATES).replace('{name}', name).replace('{n1}', product.toString()).replace('{n2}', table.toString());
                  batch.push({ num1: product, num2: table, operation: 'div', answer: factor, isWordProblem: true, questionText: text });
             }
         } else {
-            // Missing number: ? x 4 = 32
             const product = table * factor;
-            batch.push({ 
-                num1: 0, num2: table, operation: 'mul', answer: factor, isWordProblem: true, 
-                questionText: `Puzzle: ? x ${table} = ${product}. What is the missing number?` 
-            });
+            batch.push({ num1: 0, num2: table, operation: 'mul', answer: factor, isWordProblem: true, questionText: `Puzzle: ? x ${table} = ${product}. What is the missing number?` });
         }
     }
-
     return shuffleArray(batch);
 }
 
 function generateCaveBatch(): MathProblem[] {
     const batch: MathProblem[] = [];
     const count = 15;
-    
-    // Year 3: Place Value to 1000.
-    
     for (let i = 0; i < count; i++) {
-        const type = getRandomInt(1, 5); // 1: Rounding, 2: More/Less, 3: Value of Digit, 4: Partitioning, 5: Halfway
+        const type = getRandomInt(1, 5);
         const name = getRandomItem(NAMES);
-
         if (type === 1) {
-            // Rounding
             const n = getRandomInt(11, 899);
             const isTen = Math.random() > 0.5;
-            // Ensure not ending in 5 for ambiguity unless we teach "round up" rule strictly. Safe to avoid 5.
             const safeN = n % 10 === 5 ? n + 1 : n;
-            
             if (isTen) {
                 const rounded = Math.round(safeN / 10) * 10;
-                batch.push({ 
-                    num1: safeN, num2: 10, operation: 'round', answer: rounded, isWordProblem: true, 
-                    questionText: `Round the crystal weight ${safeN} to the nearest 10.` 
-                });
+                batch.push({ num1: safeN, num2: 10, operation: 'round', answer: rounded, isWordProblem: true, questionText: `Round the crystal weight ${safeN} to the nearest 10.` });
             } else {
                 const rounded = Math.round(safeN / 100) * 100;
-                batch.push({ 
-                    num1: safeN, num2: 100, operation: 'round', answer: rounded, isWordProblem: true, 
-                    questionText: `Round the depth ${safeN}m to the nearest 100.` 
-                });
+                batch.push({ num1: safeN, num2: 100, operation: 'round', answer: rounded, isWordProblem: true, questionText: `Round the depth ${safeN}m to the nearest 100.` });
             }
         } else if (type === 2) {
-             // 10 or 100 more/less
              const n = getRandomInt(100, 800);
              const isMore = Math.random() > 0.5;
              const val = Math.random() > 0.5 ? 10 : 100;
              const text = `The cave depth is ${n}m. Go ${val} meters ${isMore ? 'deeper (add)' : 'up (subtract)'}.`;
              batch.push({ num1: n, num2: val, operation: 'val', answer: isMore ? n + val : n - val, isWordProblem: true, questionText: text });
         } else if (type === 3) {
-            // Value of a digit
-            const h = getRandomInt(1, 9);
-            const t = getRandomInt(1, 9);
-            const o = getRandomInt(1, 9);
+            const h = getRandomInt(1, 9); const t = getRandomInt(1, 9); const o = getRandomInt(1, 9);
             const number = h * 100 + t * 10 + o;
-            
-            const targetPos = getRandomInt(1, 3); // 1=H, 2=T, 3=O
-            let answer = 0;
-            let qText = "";
-            
-            // Simplified: "What is the value of the hundreds digit in X?"
+            const targetPos = getRandomInt(1, 3);
+            let answer = 0; let qText = "";
             if (targetPos === 1) { qText = `What is the value of the hundreds digit in ${number}?`; answer = h * 100; }
             if (targetPos === 2) { qText = `What is the value of the tens digit in ${number}?`; answer = t * 10; }
             if (targetPos === 3) { qText = `What is the value of the ones digit in ${number}?`; answer = o; }
-            
             batch.push({ num1: number, num2: 0, operation: 'val', answer: answer, isWordProblem: true, questionText: qText });
         } else if (type === 4) {
-            // Partitioning: 400 + 50 + ? = 456
-            const h = getRandomInt(1, 9) * 100;
-            const t = getRandomInt(1, 9) * 10;
-            const o = getRandomInt(1, 9);
+            const h = getRandomInt(1, 9) * 100; const t = getRandomInt(1, 9) * 10; const o = getRandomInt(1, 9);
             const total = h + t + o;
-            
-            batch.push({ 
-                num1: total, num2: 0, operation: 'val', answer: o, isWordProblem: true, 
-                questionText: `${h} + ${t} + ? = ${total}. What is the missing number?` 
-            });
+            batch.push({ num1: total, num2: 0, operation: 'val', answer: o, isWordProblem: true, questionText: `${h} + ${t} + ? = ${total}. What is the missing number?` });
         } else {
-             // 100 more than
              const n = getRandomInt(200, 500);
-             batch.push({
-                 num1: n, num2: 100, operation: 'add', answer: n + 100, isWordProblem: true,
-                 questionText: `What number is 100 more than ${n}?`
-             });
+             batch.push({ num1: n, num2: 100, operation: 'add', answer: n + 100, isWordProblem: true, questionText: `What number is 100 more than ${n}?` });
         }
     }
     return shuffleArray(batch);
@@ -330,56 +250,30 @@ function generateCaveBatch(): MathProblem[] {
 function generateOceanBatch(): MathProblem[] {
   const batch: MathProblem[] = [];
   const count = 15;
-  
-  // Year 3: Fractions 1/2, 1/3, 1/4 of discrete sets. Add/sub fractions with same denominator.
-  
   for (let i = 0; i < count; i++) {
-    const type = getRandomInt(1, 3); // 1: Fraction of Amount, 2: Add/Sub Fractions, 3: Identify parts
+    const type = getRandomInt(1, 3);
     const name = getRandomItem(NAMES);
-
     if (type === 1) {
-      // Fraction of an amount: Find 1/d of n
       const denominator = getRandomItem([2, 3, 4, 5, 8, 10]);
       const answer = getRandomInt(2, 12);
       const total = answer * denominator; 
-      
-      const text = getRandomItem(FRACTION_TEMPLATES)
-        .replace('{name}', name)
-        .replace('{n1}', total.toString())
-        .replace('{n2}', denominator.toString());
-      
-      batch.push({ 
-        num1: total, num2: denominator, operation: 'frac', answer: answer, isWordProblem: true, questionText: text 
-      });
+      const text = getRandomItem(FRACTION_TEMPLATES).replace('{name}', name).replace('{n1}', total.toString()).replace('{n2}', denominator.toString());
+      batch.push({ num1: total, num2: denominator, operation: 'frac', answer: answer, isWordProblem: true, questionText: text });
     } else if (type === 2) {
-      // Add/Sub Fractions: 1/5 + 2/5 = ?/5
       const denominator = getRandomItem([5, 6, 7, 8, 9, 10]);
       const n1 = getRandomInt(1, denominator - 2);
-      const n2 = getRandomInt(1, denominator - n1); // Ensure sum <= denominator
+      const n2 = getRandomInt(1, denominator - n1);
       const isAdd = Math.random() > 0.5;
-
       if (isAdd) {
-          batch.push({
-              num1: n1, num2: n2, operation: 'add', answer: n1 + n2, isWordProblem: true,
-              questionText: `Add the fractions: ${n1}/${denominator} + ${n2}/${denominator} = ?/${denominator}. Enter the top number.`
-          });
+          batch.push({ num1: n1, num2: n2, operation: 'add', answer: n1 + n2, isWordProblem: true, questionText: `Add the fractions: ${n1}/${denominator} + ${n2}/${denominator} = ?/${denominator}. Enter the top number.` });
       } else {
-          // Sub: Ensure n1 > n2
           const start = getRandomInt(2, denominator);
           const sub = getRandomInt(1, start - 1);
-          batch.push({
-              num1: start, num2: sub, operation: 'sub', answer: start - sub, isWordProblem: true,
-              questionText: `Subtract: ${start}/${denominator} - ${sub}/${denominator} = ?/${denominator}. Enter the top number.`
-          });
+          batch.push({ num1: start, num2: sub, operation: 'sub', answer: start - sub, isWordProblem: true, questionText: `Subtract: ${start}/${denominator} - ${sub}/${denominator} = ?/${denominator}. Enter the top number.` });
       }
     } else {
-      // Logic
-      const num = getRandomInt(1, 5);
-      const den = getRandomInt(6, 10);
-      batch.push({
-          num1: num, num2: den, operation: 'frac', answer: den, isWordProblem: true,
-          questionText: `In the fraction ${num}/${den}, what number represents the WHOLE (denominator)?`
-      });
+      const num = getRandomInt(1, 5); const den = getRandomInt(6, 10);
+      batch.push({ num1: num, num2: den, operation: 'frac', answer: den, isWordProblem: true, questionText: `In the fraction ${num}/${den}, what number represents the WHOLE (denominator)?` });
     }
   }
   return shuffleArray(batch);
@@ -388,20 +282,16 @@ function generateOceanBatch(): MathProblem[] {
 function generateCityBatch(): MathProblem[] {
   const batch: MathProblem[] = [];
   const count = 15;
-  
-  // Year 3: 3D shapes (prism, cylinder, etc), 2D shapes, Right Angles.
-  
   const shapes3D = [
     { name: 'Cube', faces: 6, edges: 12, vertices: 8 },
-    { name: 'Cuboid', faces: 6, edges: 12, vertices: 8 }, // Rectangular prism
+    { name: 'Cuboid', faces: 6, edges: 12, vertices: 8 },
     { name: 'Sphere', faces: 1, edges: 0, vertices: 0 },
     { name: 'Cylinder', faces: 3, edges: 2, vertices: 0 },
     { name: 'Cone', faces: 2, edges: 1, vertices: 1 },
     { name: 'Square Pyramid', faces: 5, edges: 8, vertices: 5 }
   ];
-
   const shapes2D = [
-    { name: 'Triangle', sides: 3, corners: 3, rightAngles: 0 }, // General triangle assumption
+    { name: 'Triangle', sides: 3, corners: 3, rightAngles: 0 },
     { name: 'Square', sides: 4, corners: 4, rightAngles: 4 },
     { name: 'Rectangle', sides: 4, corners: 4, rightAngles: 4 },
     { name: 'Pentagon', sides: 5, corners: 5, rightAngles: 0 },
@@ -413,55 +303,26 @@ function generateCityBatch(): MathProblem[] {
   for (let i = 0; i < count; i++) {
     const is3D = Math.random() > 0.5;
     const name = getRandomItem(NAMES);
-    
     if (is3D) {
        const shape = getRandomItem(shapes3D);
        const prop = getRandomItem(['faces', 'edges', 'vertices']);
        const ans = shape[prop as keyof typeof shape] as number;
        const propName = prop === 'vertices' ? 'vertices (corners)' : prop;
-       
-       const text = getRandomItem(GEOMETRY_TEMPLATES_3D)
-         .replace('{name}', name)
-         .replace(/{shape}/g, shape.name)
-         .replace(/{prop}/g, propName);
-
-       batch.push({
-         num1: 0, num2: 0, operation: 'geo', answer: ans, isWordProblem: true,
-         questionText: text,
-         visualType: shape.name.toLowerCase().replace(' ', '-')
-       });
+       const text = getRandomItem(GEOMETRY_TEMPLATES_3D).replace('{name}', name).replace(/{shape}/g, shape.name).replace(/{prop}/g, propName);
+       batch.push({ num1: 0, num2: 0, operation: 'geo', answer: ans, isWordProblem: true, questionText: text, visualType: shape.name.toLowerCase().replace(' ', '-') });
     } else {
        const shape = getRandomItem(shapes2D);
-       const type = getRandomInt(1, 2); // 1: Sides/Corners, 2: Right Angles check
-       
+       const type = getRandomInt(1, 2);
        if (type === 1) {
            const prop = getRandomItem(['sides', 'corners']);
            const ans = shape[prop as keyof typeof shape] as number;
-           const text = getRandomItem(GEOMETRY_TEMPLATES_2D)
-             .replace('{name}', name)
-             .replace(/{shape}/g, shape.name)
-             .replace(/{prop}/g, prop);
-           
-           batch.push({
-             num1: 0, num2: 0, operation: 'geo', answer: ans, isWordProblem: true,
-             questionText: text,
-             visualType: shape.name.toLowerCase()
-           });
+           const text = getRandomItem(GEOMETRY_TEMPLATES_2D).replace('{name}', name).replace(/{shape}/g, shape.name).replace(/{prop}/g, prop);
+           batch.push({ num1: 0, num2: 0, operation: 'geo', answer: ans, isWordProblem: true, questionText: text, visualType: shape.name.toLowerCase() });
        } else {
-           // Right angles check
            if (shape.name === 'Square' || shape.name === 'Rectangle') {
-               batch.push({
-                   num1: 0, num2: 0, operation: 'geo', answer: 4, isWordProblem: true,
-                   questionText: `The ${shape.name} has how many right angles?`,
-                   visualType: shape.name.toLowerCase()
-               });
+               batch.push({ num1: 0, num2: 0, operation: 'geo', answer: 4, isWordProblem: true, questionText: `The ${shape.name} has how many right angles?`, visualType: shape.name.toLowerCase() });
            } else {
-               // Shapes with 0 usually
-               batch.push({
-                   num1: 0, num2: 0, operation: 'geo', answer: 0, isWordProblem: true,
-                   questionText: `How many right angles does a regular ${shape.name} have?`,
-                   visualType: shape.name.toLowerCase()
-               });
+               batch.push({ num1: 0, num2: 0, operation: 'geo', answer: 0, isWordProblem: true, questionText: `How many right angles does a regular ${shape.name} have?`, visualType: shape.name.toLowerCase() });
            }
        }
     }
@@ -472,80 +333,187 @@ function generateCityBatch(): MathProblem[] {
 function generateTimeBatch(): MathProblem[] {
   const batch: MathProblem[] = [];
   const count = 15;
-
   for (let i = 0; i < count; i++) {
-    const type = getRandomInt(1, 4); // 1: Clock Reading, 2: Duration, 3: Calendar, 4: Time Facts
-    
+    const type = getRandomInt(1, 4);
     if (type === 1) {
-        // Analogue Clock Reading
-        // Generate time in 5 min intervals for Year 3
         const hour = getRandomInt(1, 12);
         const minute = getRandomItem([0, 15, 30, 45, 5, 10, 20, 25, 35, 40, 50, 55]);
         const minStr = minute < 10 ? `0${minute}` : `${minute}`;
         const answer = `${hour}:${minStr}`;
-        
-        batch.push({
-            num1: 0, num2: 0, operation: 'time', answer: answer, isWordProblem: false,
-            questionText: "What time is shown on the clock? (Format: 3:00)",
-            visualType: `clock:${answer}`
-        });
+        batch.push({ num1: 0, num2: 0, operation: 'time', answer: answer, isWordProblem: false, questionText: "What time is shown on the clock? (Format: 3:00)", visualType: `clock:${answer}` });
     } else if (type === 2) {
-        // Duration: Start time + minutes
         const startHour = getRandomInt(1, 11);
-        const startMin = 0; // Simple start times for Year 3
         const addMin = getRandomItem([30, 15, 60, 45]);
-        
         let endHour = startHour;
-        let endMin = startMin + addMin;
-        
-        if (endMin >= 60) {
-            endHour += Math.floor(endMin / 60);
-            endMin = endMin % 60;
-        }
-        
+        let endMin = 0 + addMin;
+        if (endMin >= 60) { endHour += Math.floor(endMin / 60); endMin = endMin % 60; }
         const endMinStr = endMin < 10 ? `0${endMin}` : `${endMin}`;
         const answer = `${endHour}:${endMinStr}`;
-        
-        batch.push({
-            num1: 0, num2: 0, operation: 'time', answer: answer, isWordProblem: true,
-            questionText: `It is ${startHour}:00. What time will it be in ${addMin} minutes?`
-        });
+        batch.push({ num1: 0, num2: 0, operation: 'time', answer: answer, isWordProblem: true, questionText: `It is ${startHour}:00. What time will it be in ${addMin} minutes?` });
     } else if (type === 3) {
-        // Calendar: Days of Week
         const subType = getRandomInt(1, 2);
         if (subType === 1) {
-            // "What comes after X?"
-            const idx = getRandomInt(0, 5); // 0-5 (Mon-Sat)
-            const day = DAYS[idx];
-            const answer = DAYS[idx + 1];
-            batch.push({
-                num1: 0, num2: 0, operation: 'time', answer: answer, isWordProblem: true,
-                questionText: `What day comes after ${day}?`
-            });
+            const idx = getRandomInt(0, 5); const day = DAYS[idx]; const answer = DAYS[idx + 1];
+            batch.push({ num1: 0, num2: 0, operation: 'time', answer: answer, isWordProblem: true, questionText: `What day comes after ${day}?` });
         } else {
-             // "If today is X, what is tomorrow?"
-            const idx = getRandomInt(0, 6);
-            const day = DAYS[idx];
-            const nextIdx = (idx + 1) % 7;
-            const answer = DAYS[nextIdx];
-             batch.push({
-                num1: 0, num2: 0, operation: 'time', answer: answer, isWordProblem: true,
-                questionText: `If today is ${day}, what day is tomorrow?`
-            });
+            const idx = getRandomInt(0, 6); const day = DAYS[idx]; const nextIdx = (idx + 1) % 7; const answer = DAYS[nextIdx];
+             batch.push({ num1: 0, num2: 0, operation: 'time', answer: answer, isWordProblem: true, questionText: `If today is ${day}, what day is tomorrow?` });
         }
     } else {
-        // Facts
         const factType = getRandomInt(1, 3);
-        if (factType === 1) {
-            batch.push({ num1: 0, num2: 0, operation: 'time', answer: 7, isWordProblem: true, questionText: "How many days are in a week?" });
-        } else if (factType === 2) {
-            batch.push({ num1: 0, num2: 0, operation: 'time', answer: 60, isWordProblem: true, questionText: "How many minutes are in one hour?" });
-        } else {
-             batch.push({ num1: 0, num2: 0, operation: 'time', answer: 30, isWordProblem: true, questionText: "How many minutes is half an hour?" });
-        }
+        if (factType === 1) { batch.push({ num1: 0, num2: 0, operation: 'time', answer: 7, isWordProblem: true, questionText: "How many days are in a week?" }); }
+        else if (factType === 2) { batch.push({ num1: 0, num2: 0, operation: 'time', answer: 60, isWordProblem: true, questionText: "How many minutes are in one hour?" }); }
+        else { batch.push({ num1: 0, num2: 0, operation: 'time', answer: 30, isWordProblem: true, questionText: "How many minutes is half an hour?" }); }
     }
   }
   return shuffleArray(batch);
+}
+
+function generateMarketBatch(): MathProblem[] {
+    const batch: MathProblem[] = [];
+    const count = 15;
+    
+    // Money: Adding coins, Giving change
+    for (let i = 0; i < count; i++) {
+        const type = getRandomInt(1, 3);
+        const name = getRandomItem(NAMES);
+
+        if (type === 1) {
+            // Add two items
+            const item1 = getRandomItem([20, 50, 10, 5, 100, 25]);
+            const item2 = getRandomItem([20, 50, 10, 5, 5, 2]);
+            const total = item1 + item2;
+            batch.push({
+                num1: item1, num2: item2, operation: 'money', answer: total, isWordProblem: true,
+                questionText: `${name} buys a potion for ${item1} gold and an apple for ${item2} gold. Total cost?`
+            });
+        } else if (type === 2) {
+            // Change: Pay with 100 or 50
+            const cost = getRandomInt(15, 85);
+            // Ensure cost ends in 5 or 0 for year 3 ease
+            const safeCost = Math.round(cost / 5) * 5; 
+            const pay = 100;
+            const change = pay - safeCost;
+            batch.push({
+                num1: pay, num2: safeCost, operation: 'money', answer: change, isWordProblem: true,
+                questionText: `A shield costs ${safeCost} gold. ${name} pays with ${pay} gold. How much change?`
+            });
+        } else {
+            // How many 10s in X?
+            const tens = getRandomInt(2, 9);
+            const total = tens * 10;
+            batch.push({
+                num1: total, num2: 10, operation: 'money', answer: tens, isWordProblem: true,
+                questionText: `You have ${total} gold coins. How many 10-gold items can you buy?`
+            });
+        }
+    }
+    return shuffleArray(batch);
+}
+
+function generateLabBatch(): MathProblem[] {
+    const batch: MathProblem[] = [];
+    const count = 15;
+
+    // Measurement: Mass (g/kg), Capacity (ml/l), Length (cm/m)
+    for (let i = 0; i < count; i++) {
+        const type = getRandomInt(1, 3);
+        
+        if (type === 1) {
+            // Conversions (Simple)
+            const kg = getRandomInt(1, 5);
+            const g = kg * 1000;
+            const isKgToG = Math.random() > 0.5;
+            if (isKgToG) {
+                batch.push({
+                    num1: kg, num2: 0, operation: 'measure', answer: g, isWordProblem: true,
+                    questionText: `The heavy rock weighs ${kg} kg. How many grams is that? (1kg = 1000g)`
+                });
+            } else {
+                batch.push({
+                    num1: g, num2: 0, operation: 'measure', answer: kg, isWordProblem: true,
+                    questionText: `The pile of sand is ${g} grams. How many kilograms is that?`
+                });
+            }
+        } else if (type === 2) {
+            // Compare/Add
+            const v1 = getRandomInt(100, 400);
+            const v2 = getRandomInt(100, 400);
+            const total = v1 + v2;
+            batch.push({
+                num1: v1, num2: v2, operation: 'measure', answer: total, isWordProblem: true,
+                questionText: `Beaker A has ${v1}ml. Beaker B has ${v2}ml. How much liquid in total?`
+            });
+        } else {
+            // Difference
+            const len1 = getRandomInt(50, 90);
+            const len2 = getRandomInt(10, 40);
+            const diff = len1 - len2;
+            batch.push({
+                num1: len1, num2: len2, operation: 'measure', answer: diff, isWordProblem: true,
+                questionText: `The red wand is ${len1}cm. The blue wand is ${len2}cm. How much longer is the red wand?`
+            });
+        }
+    }
+    return shuffleArray(batch);
+}
+
+function generateSafariBatch(): MathProblem[] {
+    const batch: MathProblem[] = [];
+    const count = 15;
+
+    // Data (Interpreting simple text data) & Position (Compass)
+    for (let i = 0; i < count; i++) {
+        const type = getRandomInt(1, 2);
+        
+        if (type === 1) {
+            // Data
+            const lions = getRandomInt(2, 8);
+            const zebras = getRandomInt(2, 8);
+            const total = lions + zebras;
+            const subType = Math.random();
+            
+            if (subType < 0.33) {
+                 batch.push({
+                    num1: lions, num2: zebras, operation: 'data', answer: total, isWordProblem: true,
+                    questionText: `Safari Report: ${lions} Lions, ${zebras} Zebras. How many animals in total?`
+                });
+            } else if (subType < 0.66) {
+                const diff = Math.abs(lions - zebras);
+                const more = lions > zebras ? 'Lions' : 'Zebras';
+                batch.push({
+                    num1: lions, num2: zebras, operation: 'data', answer: diff, isWordProblem: true,
+                    questionText: `Safari Report: ${lions} Lions, ${zebras} Zebras. How many more ${more} are there?`
+                });
+            } else {
+                const elephants = getRandomInt(2, 5);
+                const grandTotal = total + elephants;
+                batch.push({
+                    num1: 0, num2: 0, operation: 'data', answer: grandTotal, isWordProblem: true,
+                    questionText: `Chart: ${lions} Lions, ${zebras} Zebras, ${elephants} Elephants. Total animals?`
+                });
+            }
+        } else {
+            // Direction
+            const directions = ['North', 'East', 'South', 'West'];
+            const startIdx = getRandomInt(0, 3);
+            const turn = Math.random() > 0.5 ? 1 : -1; // 1 Right, -1 Left
+            
+            let endIdx = startIdx + turn;
+            if (endIdx > 3) endIdx = 0;
+            if (endIdx < 0) endIdx = 3;
+            
+            const startDir = directions[startIdx];
+            const endDir = directions[endIdx];
+            const turnName = turn === 1 ? 'clockwise (right)' : 'anti-clockwise (left)';
+            
+            batch.push({
+                num1: 0, num2: 0, operation: 'geo', answer: endDir, isWordProblem: true,
+                questionText: `You are facing ${startDir}. Turn 90 degrees ${turnName}. Which way are you facing now? (North, South, East, West)`
+            });
+        }
+    }
+    return shuffleArray(batch);
 }
 
 // --- PUBLIC API ---
@@ -557,6 +525,9 @@ export const getGameBatch = (gameId: GameId): MathProblem[] => {
     case 'ocean': return generateOceanBatch();
     case 'city': return generateCityBatch();
     case 'time': return generateTimeBatch();
+    case 'market': return generateMarketBatch();
+    case 'lab': return generateLabBatch();
+    case 'safari': return generateSafariBatch();
     case 'space': default: return generateSpaceBatch();
   }
 };

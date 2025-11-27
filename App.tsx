@@ -48,6 +48,9 @@ const App: React.FC = () => {
         ocean: { ...initialGameStats },
         city: { ...initialGameStats },
         time: { ...initialGameStats },
+        market: { ...initialGameStats },
+        lab: { ...initialGameStats },
+        safari: { ...initialGameStats },
     },
     lastPlayed: new Date().toISOString()
   });
@@ -185,7 +188,10 @@ const App: React.FC = () => {
       cave: 'Crystal Cave',
       ocean: 'Ocean Odyssey',
       city: 'Sky City Builder',
-      time: 'Time Warp Chronicles'
+      time: 'Time Warp Chronicles',
+      market: 'Magic Market',
+      lab: 'Alchemy Lab',
+      safari: 'Safari Scout'
     };
     return titles[gameId] || 'Majesty Maths Adventure';
   };

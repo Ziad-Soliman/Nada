@@ -12,7 +12,10 @@ const getInitialStats = (): Record<GameId, GameStats> => {
         cave: { ...emptyStat },
         ocean: { ...emptyStat },
         city: { ...emptyStat },
-        time: { ...emptyStat }
+        time: { ...emptyStat },
+        market: { ...emptyStat },
+        lab: { ...emptyStat },
+        safari: { ...emptyStat }
     };
 };
 

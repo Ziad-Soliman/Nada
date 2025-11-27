@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Shield, Star, AlertCircle, CheckCircle, Brain, Lightbulb, Rocket, Trees, Gem, Anchor, Building2, Clock } from 'lucide-react';
+import { Shield, Star, AlertCircle, CheckCircle, Brain, Lightbulb, Rocket, Trees, Gem, Anchor, Building2, Clock, Coins, FlaskConical, Binoculars } from 'lucide-react';
 import { PlayerState, MathProblem, GameId } from '../types';
 import { getGameBatch } from '../services/math';
 import Button from './Button';
@@ -35,6 +35,9 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, gameId, onF
     ocean: { accent: 'text-teal-400', border: 'focus:border-teal-500', button: 'primary', icon: Anchor, bgIcon: 'bg-teal-500', gradient: 'from-teal-400 to-cyan-500', shapeColor: 'text-teal-400' },
     city: { accent: 'text-sky-400', border: 'focus:border-sky-500', button: 'secondary', icon: Building2, bgIcon: 'bg-sky-500', gradient: 'from-sky-400 to-indigo-500', shapeColor: 'text-sky-400' },
     time: { accent: 'text-amber-400', border: 'focus:border-amber-500', button: 'warning', icon: Clock, bgIcon: 'bg-amber-500', gradient: 'from-amber-400 to-orange-500', shapeColor: 'text-amber-400' },
+    market: { accent: 'text-yellow-400', border: 'focus:border-yellow-500', button: 'warning', icon: Coins, bgIcon: 'bg-yellow-500', gradient: 'from-yellow-400 to-amber-600', shapeColor: 'text-yellow-400' },
+    lab: { accent: 'text-pink-400', border: 'focus:border-pink-500', button: 'danger', icon: FlaskConical, bgIcon: 'bg-pink-500', gradient: 'from-pink-500 to-rose-600', shapeColor: 'text-pink-400' },
+    safari: { accent: 'text-lime-400', border: 'focus:border-lime-500', button: 'success', icon: Binoculars, bgIcon: 'bg-lime-500', gradient: 'from-lime-400 to-green-600', shapeColor: 'text-lime-400' },
   }[gameId];
 
   // Initial Game Load
@@ -163,6 +166,9 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, gameId, onF
     if (operation === 'frac') return `1/${num2} means divide by ${num2}.`;
     if (operation === 'geo') return `Count carefully!`;
     if (operation === 'time') return `Check the hour hand (short) and minute hand (long).`;
+    if (operation === 'money') return `Count up from the smaller number to find the difference.`;
+    if (operation === 'measure') return `Remember: 1kg = 1000g, 1m = 100cm.`;
+    if (operation === 'data') return `Read the text carefully. Is it total or difference?`;
 
     return "Check your calculation carefully.";
   };
@@ -190,6 +196,9 @@ const GameScreen: React.FC<GameScreenProps> = ({ initialPlayerState, gameId, onF
       case 'frac': symbol = 'f'; break;
       case 'geo': symbol = '?'; break;
       case 'time': symbol = 'T'; break;
+      case 'money': symbol = '$'; break;
+      case 'measure': symbol = 'M'; break;
+      case 'data': symbol = 'D'; break;
   }
 
   // Determine Input Type

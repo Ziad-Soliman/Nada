@@ -77,6 +77,33 @@ const DynamicBackground: React.FC<DynamicBackgroundProps> = ({ phase, gameId }) 
         overlayGradient: 'from-amber-500/20 to-transparent',
         nebulaColors: ['bg-amber-900/50', 'bg-orange-900/40', 'bg-yellow-900/30'],
         texture: "url('https://www.transparenttextures.com/patterns/gears.png')"
+    },
+    market: {
+        bg: 'bg-yellow-950',
+        particleColor: 'bg-yellow-200/50', // Sparkles
+        particleShape: 'rounded-full',
+        image: "url('https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=2670&auto=format&fit=crop')", // Market/Shop
+        overlayGradient: 'from-yellow-600/30 to-transparent',
+        nebulaColors: ['bg-yellow-900/50', 'bg-orange-900/40', 'bg-red-900/30'],
+        texture: "url('https://www.transparenttextures.com/patterns/arabesque.png')"
+    },
+    lab: {
+        bg: 'bg-pink-950',
+        particleColor: 'bg-rose-200/60', // Bubbles
+        particleShape: 'rounded-full',
+        image: "url('https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=2670&auto=format&fit=crop')", // Lab
+        overlayGradient: 'from-pink-600/30 to-transparent',
+        nebulaColors: ['bg-pink-900/50', 'bg-rose-900/40', 'bg-fuchsia-900/30'],
+        texture: "url('https://www.transparenttextures.com/patterns/hexellence.png')"
+    },
+    safari: {
+        bg: 'bg-lime-950',
+        particleColor: 'bg-green-200/50',
+        particleShape: 'rounded-sm',
+        image: "url('https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=2668&auto=format&fit=crop')", // Safari
+        overlayGradient: 'from-lime-600/30 to-transparent',
+        nebulaColors: ['bg-lime-900/50', 'bg-green-900/40', 'bg-emerald-900/30'],
+        texture: "url('https://www.transparenttextures.com/patterns/food.png')"
     }
   };
 
