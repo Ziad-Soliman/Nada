@@ -59,6 +59,7 @@ export interface NotionStudent {
   totalScore: number;
   lastPlayed: string;
   rank: string;
+  character: CharacterConfig;
 }
 
 export interface StudentDatabase {

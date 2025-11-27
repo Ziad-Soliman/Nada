@@ -1,8 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { PlayerState, NotionStudent, ClassId } from '../types';
-import { ArrowLeft, Award, Users, Download, Search, Filter, Cloud, RefreshCw, Eye, X, Wifi, WifiOff, Globe } from 'lucide-react';
+import { ArrowLeft, Award, Users, Download, Search, Filter, Cloud, RefreshCw, Eye, X, Wifi, WifiOff, Globe, Trophy } from 'lucide-react';
 import Button from './Button';
+import Avatar from './Avatar';
 import { fetchNotionStudents } from '../services/notion';
 
 interface DashboardScreenProps {
@@ -56,25 +57,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onBack }) => {
       }
   };
 
-  // Helper to generate consistent colors for avatars based on name
-  const getAvatarColor = (name: string) => {
-    const colors = [
-        'bg-red-500 border-red-400 text-white', 
-        'bg-blue-500 border-blue-400 text-white', 
-        'bg-green-500 border-green-400 text-white', 
-        'bg-yellow-500 border-yellow-400 text-white', 
-        'bg-purple-500 border-purple-400 text-white', 
-        'bg-pink-500 border-pink-400 text-white', 
-        'bg-indigo-500 border-indigo-400 text-white',
-        'bg-cyan-500 border-cyan-400 text-white'
-    ];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-        hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return colors[Math.abs(hash) % colors.length];
-  };
-
   // --- FILTERING LOGIC ---
   const filteredList = students.filter(s => {
     const fullName = (s.firstName + ' ' + s.lastName).toLowerCase();
@@ -82,6 +64,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onBack }) => {
     const matchesClass = classFilter === 'ALL' || s.classId === classFilter;
     return matchesName && matchesClass;
   });
+
+  // Sort by Score Descending
+  const sortedList = [...filteredList].sort((a, b) => b.totalScore - a.totalScore);
+  
+  // Top 3 Students
+  const topStudents = sortedList.slice(0, 3);
 
   // --- STATS CALCULATION ---
   const totalStudents = students.length;
@@ -116,8 +104,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onBack }) => {
   const renderStudentDetails = () => {
       if (!selectedStudent) return null;
       const rank = getRank(selectedStudent.totalScore);
-      const initials = (selectedStudent.firstName.charAt(0) + selectedStudent.lastName.charAt(0)).toUpperCase();
-      const avatarStyle = getAvatarColor(selectedStudent.firstName + selectedStudent.lastName);
+      
+      // Default fallback if character config is missing (though sync should provide it)
+      const character = selectedStudent.character || { suitColor: 'blue', helmetStyle: 'classic', badge: 'star' };
 
       return (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in p-4">
@@ -135,8 +124,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onBack }) => {
                   <div className="p-8 pb-4 flex flex-col items-center text-center relative overflow-hidden">
                       <div className="absolute inset-0 bg-gradient-to-b from-blue-900/20 to-transparent pointer-events-none"></div>
                       
-                      <div className={`w-24 h-24 rounded-full border-4 shadow-xl flex items-center justify-center mb-4 ${avatarStyle}`}>
-                          <span className="text-3xl font-bold font-['Orbitron']">{initials}</span>
+                      <div className="w-32 h-32 rounded-full border-4 border-slate-700 bg-slate-800 shadow-xl flex items-center justify-center mb-4 overflow-hidden relative group">
+                          <div className="absolute inset-0 bg-white/5 group-hover:bg-white/10 transition-colors"></div>
+                          <Avatar config={character} size="xl" className="transform translate-y-2 scale-110" />
                       </div>
                       
                       <h3 className="text-2xl font-['Orbitron'] font-bold text-white tracking-wide">
@@ -282,6 +272,55 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onBack }) => {
       {/* DASHBOARD CONTENT AREA */}
       <div className="flex-1 overflow-y-auto bg-slate-50/50 p-6 md:p-8 scroll-smooth">
         
+        {/* LEADERBOARD PODIUM - Shows only if we have students and no specific search filtering active (class filter ok) */}
+        {!isLoading && !error && filteredList.length > 0 && !filterText && (
+             <div className="mb-10 flex flex-col items-center">
+                <div className="flex items-center gap-2 mb-6">
+                    <Trophy className="w-6 h-6 text-yellow-500" />
+                    <h3 className="text-xl font-bold text-slate-700 font-['Cinzel'] tracking-wide">Academy Leaders</h3>
+                </div>
+                
+                <div className="flex items-end justify-center gap-4 md:gap-8">
+                    {/* 2nd Place */}
+                    {topStudents[1] && (
+                        <div className="flex flex-col items-center animate-fade-in-up" style={{animationDelay: '0.1s'}}>
+                            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-4 border-slate-300 bg-white shadow-lg flex items-center justify-center relative mb-3 group">
+                                <Avatar config={topStudents[1].character} size="md" className="transform scale-90 translate-y-1" />
+                                <div className="absolute -bottom-3 w-6 h-6 bg-slate-300 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm">2</div>
+                            </div>
+                            <p className="font-bold text-slate-700 text-sm">{topStudents[1].firstName}</p>
+                            <p className="text-xs text-slate-500 font-bold">{topStudents[1].totalScore} XP</p>
+                        </div>
+                    )}
+                    
+                    {/* 1st Place */}
+                    {topStudents[0] && (
+                        <div className="flex flex-col items-center -mt-6 animate-fade-in-up">
+                            <div className="w-20 h-20 md:w-28 md:h-28 rounded-full border-4 border-yellow-400 bg-white shadow-xl flex items-center justify-center relative mb-3 group">
+                                <div className="absolute -top-6 text-2xl animate-bounce">👑</div>
+                                <Avatar config={topStudents[0].character} size="lg" className="transform scale-100 translate-y-1" />
+                                <div className="absolute -bottom-3 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-sm">1</div>
+                            </div>
+                            <p className="font-bold text-slate-800 text-base">{topStudents[0].firstName}</p>
+                            <p className="text-xs text-yellow-600 font-bold bg-yellow-50 px-2 py-0.5 rounded-full border border-yellow-200 mt-1">{topStudents[0].totalScore} XP</p>
+                        </div>
+                    )}
+                    
+                    {/* 3rd Place */}
+                    {topStudents[2] && (
+                        <div className="flex flex-col items-center animate-fade-in-up" style={{animationDelay: '0.2s'}}>
+                            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-4 border-orange-300 bg-white shadow-lg flex items-center justify-center relative mb-3 group">
+                                <Avatar config={topStudents[2].character} size="md" className="transform scale-90 translate-y-1" />
+                                <div className="absolute -bottom-3 w-6 h-6 bg-orange-300 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm">3</div>
+                            </div>
+                            <p className="font-bold text-slate-700 text-sm">{topStudents[2].firstName}</p>
+                            <p className="text-xs text-slate-500 font-bold">{topStudents[2].totalScore} XP</p>
+                        </div>
+                    )}
+                </div>
+             </div>
+        )}
+
         {/* Stats Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-white p-6 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between group hover:border-blue-500/20 transition-colors">
@@ -348,16 +387,15 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onBack }) => {
                                     </td>
                                 </tr>
                             ) : (
-                                filteredList.map((student) => {
+                                sortedList.map((student) => {
                                     const rank = getRank(student.totalScore);
-                                    const avatarStyle = getAvatarColor(student.firstName + student.lastName);
                                     
                                     return (
                                         <tr key={student.id} className="hover:bg-blue-50/40 transition-colors group cursor-default">
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-4">
-                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold border-2 shadow-sm ${avatarStyle}`}>
-                                                        {student.firstName.charAt(0)}{student.lastName.charAt(0)}
+                                                    <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0">
+                                                        <Avatar config={student.character || {suitColor: 'blue', helmetStyle: 'classic', badge: 'star'}} size="sm" className="w-full h-full transform scale-125 translate-y-1" />
                                                     </div>
                                                     <div>
                                                         <span className="font-bold text-slate-700 block text-sm group-hover:text-blue-700 transition-colors">

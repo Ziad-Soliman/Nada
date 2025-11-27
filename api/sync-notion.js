@@ -50,6 +50,19 @@ export default async function handler(req, res) {
 
           const students = response.results.map(page => {
               const props = page.properties;
+              
+              // Parse Character Config from Notion Text Column
+              let character = { suitColor: 'blue', helmetStyle: 'classic', badge: 'star' };
+              const avatarJson = getPropValue(props['Avatar Config']);
+              if (avatarJson) {
+                  try {
+                      const parsed = JSON.parse(avatarJson);
+                      if (parsed) character = parsed;
+                  } catch (e) {
+                      console.warn("Failed to parse avatar config for student", page.id);
+                  }
+              }
+
               return {
                   id: page.id,
                   firstName: getPropValue(props['First Name']) || 'Unknown',
@@ -57,8 +70,8 @@ export default async function handler(req, res) {
                   classId: getPropValue(props['Class']) || 'N/A',
                   totalScore: getPropValue(props['Total XP']) || 0,
                   lastPlayed: getPropValue(props['Last Played']) || new Date().toISOString(),
-                  // We don't store Rank explicitly usually, but we can infer or if it exists
-                  rank: getPropValue(props['Rank']) || 'Cadet' 
+                  rank: getPropValue(props['Rank']) || 'Cadet',
+                  character: character
               };
           });
 
@@ -90,6 +103,9 @@ export default async function handler(req, res) {
     } : null;
     
     const studentUniqueId = `${student.firstName} ${student.lastName} ${student.classId}`.toUpperCase();
+    
+    // Serialize Avatar Config
+    const avatarConfigJson = student.character ? JSON.stringify(student.character) : null;
 
     try {
         // --- STEP 1: FIND OR CREATE STUDENT ---
@@ -113,7 +129,7 @@ export default async function handler(req, res) {
                 const response = await findStudentByColumn('Name');
                 if (response.results.length > 0) existingStudent = response.results[0];
             } catch (e2) {
-                 // Schema might be different, try just creating.
+                 // Schema might be different
             }
         }
 
@@ -126,9 +142,15 @@ export default async function handler(req, res) {
             try {
                 const updateProps = { 'Last Played': { date: { start: new Date().toISOString() } } };
                 if (scoreToAdd > 0) updateProps['Total XP'] = { number: currentTotalXP + scoreToAdd };
+                
+                // Update Avatar if provided
+                if (avatarConfigJson) {
+                    updateProps['Avatar Config'] = { rich_text: [{ text: { content: avatarConfigJson } }] };
+                }
+
                 await notion.pages.update({ page_id: notionPageId, properties: updateProps });
             } catch (updateError) {
-                console.warn("Failed to update Student Profile XP:", updateError.message);
+                console.warn("Failed to update Student Profile:", updateError.message);
             }
         } else {
             // CREATE NEW
@@ -137,7 +159,8 @@ export default async function handler(req, res) {
                 'Last Name': { rich_text: [{ text: { content: String(student.lastName) } }] },
                 'Class': { select: { name: String(student.classId) } },
                 'Total XP': { number: scoreToAdd },
-                'Last Played': { date: { start: new Date().toISOString() } }
+                'Last Played': { date: { start: new Date().toISOString() } },
+                'Avatar Config': { rich_text: [{ text: { content: avatarConfigJson || "{}" } }] }
             };
 
             try {
@@ -163,7 +186,6 @@ export default async function handler(req, res) {
         if (game && safeStats) {
             const missionTitle = `${game.title} - ${new Date().toLocaleDateString()}`;
             
-            // Define payload strategies
             const createPayload = (titleColName, includeDetails) => {
                 const base = {
                     'Student': { relation: [{ id: notionPageId }] },
@@ -190,22 +212,16 @@ export default async function handler(req, res) {
                 });
             };
 
-            // Attempt strategies to save the log
             try {
                 await tryCreateLog('Mission Name', true);
             } catch (err1) {
                 try {
                     await tryCreateLog('Name', true);
                 } catch (err2) {
-                    // Safe mode fallbacks
                     try {
                         await tryCreateLog('Mission Name', false);
                     } catch (err3) {
-                        try {
-                           await tryCreateLog('Name', false);
-                        } catch (err4) {
-                           console.warn("Log creation failed completely", err4.message);
-                        }
+                         // best effort
                     }
                 }
             }

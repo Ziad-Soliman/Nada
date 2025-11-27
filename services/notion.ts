@@ -70,7 +70,8 @@ export const syncScoreToNotion = async (player: PlayerState, gameId: GameId, sco
             firstName: player.firstName,
             lastName: player.lastName,
             classId: player.classId,
-            id: player.id
+            id: player.id,
+            character: player.character
         },
         game: { id: gameId, title: title },
         stats: { score, maxScore, rank, hintsUsed }
@@ -85,7 +86,8 @@ export const syncProfileToNotion = async (player: PlayerState) => {
             firstName: player.firstName,
             lastName: player.lastName,
             classId: player.classId,
-            id: player.id
+            id: player.id,
+            character: player.character
         }
     };
     await sendToApi(payload);
