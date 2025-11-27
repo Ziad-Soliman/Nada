@@ -56,6 +56,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onBack }) => {
   };
 
   // Helper for Rank Calculation based on Total XP
+  // MUST MATCH API LOGIC in api/sync-notion.js
   const getRank = (totalScore: number) => {
     if (totalScore > 2000) return "Galactic Legend";
     if (totalScore > 1000) return "Mission Commander";

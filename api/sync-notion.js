@@ -22,6 +22,15 @@ const getPropValue = (prop) => {
     return null;
 };
 
+// Rank Calculation Logic (Matches Frontend)
+const calculateRank = (totalScore) => {
+    if (totalScore > 2000) return "Galactic Legend";
+    if (totalScore > 1000) return "Mission Commander";
+    if (totalScore > 500) return "Star Pilot";
+    if (totalScore > 100) return "Space Cadet";
+    return "Rookie";
+};
+
 export default async function handler(req, res) {
   // --- ENVIRONMENT VARIABLES ---
   const NOTION_API_KEY = process.env.NOTION_API_KEY ? process.env.NOTION_API_KEY.trim() : null;
@@ -86,17 +95,16 @@ export default async function handler(req, res) {
           const students = response.results.map(page => {
               const props = page.properties;
               
-              // Parse Character Config from Notion Text Column
-              let character = { suitColor: 'blue', helmetStyle: 'classic', badge: 'star' };
-              const avatarJson = getPropValue(props['Avatar Config']);
-              if (avatarJson) {
-                  try {
-                      const parsed = JSON.parse(avatarJson);
-                      if (parsed) character = parsed;
-                  } catch (e) {
-                      console.warn("Failed to parse avatar config for student", page.id);
-                  }
-              }
+              // Parse Character Config from Separate Columns
+              // Default to basic if missing
+              const character = {
+                  suitColor: (getPropValue(props['Suit Color']) || 'blue').toLowerCase(),
+                  helmetStyle: (getPropValue(props['Helmet']) || 'classic').toLowerCase(),
+                  badge: (getPropValue(props['Badge']) || 'star').toLowerCase()
+              };
+
+              // Try 'Current Rank', fallback to 'Rank'
+              const rank = getPropValue(props['Current Rank']) || getPropValue(props['Rank']) || 'Rookie';
 
               return {
                   id: page.id,
@@ -105,7 +113,7 @@ export default async function handler(req, res) {
                   classId: getPropValue(props['Class']) || 'N/A',
                   totalScore: getPropValue(props['Total XP']) || 0,
                   lastPlayed: getPropValue(props['Last Played']) || new Date().toISOString(),
-                  rank: getPropValue(props['Rank']) || 'Cadet',
+                  rank: rank,
                   character: character
               };
           });
@@ -134,13 +142,10 @@ export default async function handler(req, res) {
         score: Number(stats.score),
         maxScore: Number(stats.maxScore || 100),
         hintsUsed: Number(stats.hintsUsed || 0),
-        rank: String(stats.rank || "Participant"),
+        rank: String(stats.rank || "Participant"), // This is the Game Session Rank (e.g. Gold/Silver)
     } : null;
     
     const studentUniqueId = `${student.firstName} ${student.lastName} ${student.classId}`.toUpperCase();
-    
-    // Serialize Avatar Config
-    const avatarConfigJson = student.character ? JSON.stringify(student.character) : null;
 
     try {
         // --- STEP 1: FIND OR CREATE STUDENT ---
@@ -168,24 +173,56 @@ export default async function handler(req, res) {
             }
         }
 
+        // Calculate New Values
+        if (existingStudent) {
+            const xpProp = existingStudent.properties['Total XP'];
+            if (xpProp && xpProp.number !== undefined) currentTotalXP = xpProp.number;
+        }
+        const newTotalXP = currentTotalXP + scoreToAdd;
+        const newOverallRank = calculateRank(newTotalXP); // Calculate Global Rank based on XP
+
+        // Prepare Avatar Props
+        const avatarProps = {
+            'Suit Color': { select: { name: student.character.suitColor } },
+            'Helmet': { select: { name: student.character.helmetStyle } },
+            'Badge': { select: { name: student.character.badge } }
+        };
+
         if (existingStudent) {
             // UPDATE EXISTING
             notionPageId = existingStudent.id;
-            const xpProp = existingStudent.properties['Total XP'];
-            if (xpProp && xpProp.number !== undefined) currentTotalXP = xpProp.number;
 
             try {
-                const updateProps = { 'Last Played': { date: { start: new Date().toISOString() } } };
-                if (scoreToAdd > 0) updateProps['Total XP'] = { number: currentTotalXP + scoreToAdd };
+                // Try updating "Current Rank" first, fallback if it fails or schema differs
+                const updateProps = { 
+                    ...avatarProps,
+                    'Last Played': { date: { start: new Date().toISOString() } }
+                };
                 
-                // Update Avatar if provided
-                if (avatarConfigJson) {
-                    updateProps['Avatar Config'] = { rich_text: [{ text: { content: avatarConfigJson } }] };
+                if (scoreToAdd > 0) {
+                    updateProps['Total XP'] = { number: newTotalXP };
+                    
+                    // Attempt to write to "Current Rank" column
+                    // If your DB uses "Rank", you might want to change this key
+                    updateProps['Current Rank'] = { select: { name: newOverallRank } };
+                } else {
+                    // Even if just syncing profile (no score), ensure Rank is consistent
+                    updateProps['Current Rank'] = { select: { name: newOverallRank } };
                 }
 
                 await notion.pages.update({ page_id: notionPageId, properties: updateProps });
             } catch (updateError) {
-                console.warn("Failed to update Student Profile:", updateError.message);
+                console.warn("Update Warning (Checking schema mismatch?):", updateError.message);
+                
+                // Fallback: If 'Current Rank' failed, maybe column is named 'Rank'
+                if (updateError.message.includes('Current Rank')) {
+                     try {
+                        const fallbackProps = {
+                            'Rank': { select: { name: newOverallRank } }
+                        };
+                        await notion.pages.update({ page_id: notionPageId, properties: fallbackProps });
+                     } catch (e) { /* ignore */ }
+                }
             }
         } else {
             // CREATE NEW
@@ -195,7 +232,8 @@ export default async function handler(req, res) {
                 'Class': { select: { name: String(student.classId) } },
                 'Total XP': { number: scoreToAdd },
                 'Last Played': { date: { start: new Date().toISOString() } },
-                'Avatar Config': { rich_text: [{ text: { content: avatarConfigJson || "{}" } }] }
+                'Current Rank': { select: { name: newOverallRank } },
+                ...avatarProps
             };
 
             try {
@@ -233,7 +271,7 @@ export default async function handler(req, res) {
                         'Game Mode': { select: { name: String(game.title) } },
                         'Score': { number: safeStats.score },
                         'Max Score': { number: safeStats.maxScore },
-                        'Outcome': { select: { name: safeStats.rank } },
+                        'Outcome': { select: { name: safeStats.rank } }, // Session Rank (Gold/Silver/etc)
                         'Hints Used': { number: safeStats.hintsUsed }
                     };
                 }
@@ -253,11 +291,8 @@ export default async function handler(req, res) {
                 try {
                     await tryCreateLog('Name', true);
                 } catch (err2) {
-                    try {
-                        await tryCreateLog('Mission Name', false);
-                    } catch (err3) {
-                         // best effort
-                    }
+                     // Try creating without details if schema is strict
+                     await tryCreateLog('Mission Name', false);
                 }
             }
         }
