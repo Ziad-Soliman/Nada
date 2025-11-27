@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { GameId } from '../types';
-import { Rocket, Trees, Gem, ArrowRight, Lock, Anchor, Building2, Clock, Coins, FlaskConical, Binoculars } from 'lucide-react';
+import { Rocket, Trees, Gem, ArrowRight, Lock, Anchor, Building2, Clock, Coins, FlaskConical, Compass } from 'lucide-react';
 
 interface MissionSelectProps {
   onSelect: (gameId: GameId) => void;
@@ -95,7 +95,7 @@ const MissionSelect: React.FC<MissionSelectProps> = ({ onSelect, playerName }) =
       id: 'safari' as GameId,
       title: 'Safari Scout',
       subtitle: 'Data & Direction',
-      icon: Binoculars,
+      icon: Compass,
       color: 'from-lime-500 to-green-700',
       shadow: 'shadow-lime-500/40',
       description: "On Patrol! Analyze animal population charts to answer data questions and navigate the jungle using compass directions.",

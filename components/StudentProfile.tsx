@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { PlayerState, GameId, GameStats } from '../types';
-import { Rocket, Trees, Gem, Anchor, Building2, Medal, Trophy, ArrowLeft, Clock, Coins, FlaskConical, Binoculars } from 'lucide-react';
+import { Rocket, Trees, Gem, Anchor, Building2, Medal, Trophy, ArrowLeft, Clock, Coins, FlaskConical, Compass } from 'lucide-react';
 import Avatar from './Avatar';
 import Button from './Button';
 
@@ -20,7 +20,7 @@ const StudentProfile: React.FC<StudentProfileProps> = ({ player, onBack }) => {
     time: { label: 'Time Warp', icon: Clock, color: 'text-amber-400' },
     market: { label: 'Magic Market', icon: Coins, color: 'text-yellow-400' },
     lab: { label: 'Alchemy Lab', icon: FlaskConical, color: 'text-pink-400' },
-    safari: { label: 'Safari Scout', icon: Binoculars, color: 'text-lime-400' },
+    safari: { label: 'Safari Scout', icon: Compass, color: 'text-lime-400' },
   };
 
   const stats = Object.values(player.stats) as GameStats[];

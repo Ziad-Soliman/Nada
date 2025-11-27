@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { PlayerState, NotionStudent, ClassId, NotionLog } from '../types';
-import { ArrowLeft, Award, Users, Download, Search, Filter, Cloud, RefreshCw, Eye, X, Wifi, WifiOff, Globe, Trophy, Rocket, Trees, Gem, Anchor, Building2, Clock, Calendar } from 'lucide-react';
+import { ArrowLeft, Award, Users, Download, Search, Filter, Cloud, RefreshCw, Eye, X, Wifi, WifiOff, Globe, Trophy, Rocket, Trees, Gem, Anchor, Building2, Clock, Calendar, Coins, FlaskConical, Compass } from 'lucide-react';
 import Button from './Button';
 import Avatar from './Avatar';
 import { fetchNotionStudents, fetchStudentLogs } from '../services/notion';
@@ -82,6 +82,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onBack }) => {
       if (lower.includes('ocean')) return Anchor;
       if (lower.includes('city') || lower.includes('sky')) return Building2;
       if (lower.includes('time')) return Clock;
+      if (lower.includes('market')) return Coins;
+      if (lower.includes('lab') || lower.includes('alchemy')) return FlaskConical;
+      if (lower.includes('safari')) return Compass;
       return Award;
   };
 
